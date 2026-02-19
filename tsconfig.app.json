@@ -1,0 +1,12 @@
+{
+    "include": ["src/components/ui/**/*"],
+    "compilerOptions": {
+        "composite": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ]
+        }
+    }
+}

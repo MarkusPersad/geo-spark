@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenLayers GeoJSON 属性表展示</title>
+
+    <!-- OpenLayers CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- shpjs -->
+    <script src="https://unpkg.com/shpjs@latest/dist/shp.js"></script>
+
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .map-container {
+            position: relative;
+            height: 60vh;
+            min-height: 400px;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            background: #f8fafc;
+        }
+
+        /* 自定义滚动条 */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* 表格行悬停效果 */
+        .table-row-hover:hover {
+            background-color: #eff6ff;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        /* 选中行样式 */
+        .table-row-selected {
+            background-color: #dbeafe !important;
+            border-left: 3px solid #3b82f6;
+        }
+
+        /* 地图要素悬停样式 */
+        .ol-layer-vector .ol-selectable {
+            cursor: pointer;
+        }
+
+        /* 加载动画 */
+        .loader {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 淡入动画 */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+<!-- 头部 -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-600/20">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0121 18.382V7.618a1 1 0 01-.806-.984A10.001 10.001 0 018.022 6.167M9 7l6-3"></path>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-slate-900 tracking-tight">GeoJSON 属性查看器</h1>
+                <p class="text-xs text-slate-500">OpenLayers + 交互式表格</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button onclick="loadSampleData()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                加载示例数据
+            </button>
+            <label class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center gap-2 shadow-lg shadow-blue-600/20">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+                上传 Shapefile
+                <input type="file" id="fileInput" accept=".shp,.dbf,.prj,.cpg" multiple class="hidden" onchange="handleShpFileUpload(event)">
+            </label>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- 统计卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="statsContainer">
+        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">要素总数</p>
+                    <p class="text-2xl font-bold text-slate-900 mt-1" id="featureCount">0</p>
+                </div>
+                <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">几何类型</p>
+                    <p class="text-2xl font-bold text-slate-900 mt-1" id="geometryType">-</p>
+                </div>
+                <div class="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">属性字段数</p>
+                    <p class="text-2xl font-bold text-slate-900 mt-1" id="fieldCount">0</p>
+                </div>
+                <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">选中要素</p>
+                    <p class="text-2xl font-bold text-slate-900 mt-1" id="selectedCount">0</p>
+                </div>
+                <div class="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 地图区域 -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="map-container">
+            <div id="map"></div>
+
+            <!-- 地图控制按钮 -->
+            <div class="absolute top-4 right-4 flex flex-col gap-2">
+                <button onclick="zoomToExtent()" class="p-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow text-slate-600 hover:text-blue-600" title="缩放至全图">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                    </svg>
+                </button>
+                <button onclick="clearSelection()" class="p-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow text-slate-600 hover:text-red-600" title="清除选择">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- 加载指示器 -->
+            <div id="mapLoader" class="absolute inset-0 bg-white/80 flex items-center justify-center hidden">
+                <div class="loader"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 属性表格 -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+            <div class="flex items-center gap-3">
+                <h2 class="text-lg font-semibold text-slate-900">属性表</h2>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600" id="tableBadge">0 条记录</span>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="搜索属性..."
+                           class="pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+                           oninput="filterTable()">
+                    <svg class="w-5 h-5 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <button onclick="exportToCSV()" class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    导出 CSV
+                </button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto custom-scrollbar max-h-[500px]">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-slate-50 sticky top-0 z-10">
+                <tr id="tableHeader">
+                    <th class="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200 w-12">
+                        <input type="checkbox" id="selectAll" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500" onchange="toggleSelectAll()">
+                    </th>
+                    <th class="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">序号</th>
+                    <!-- 动态表头将插入这里 -->
+                </tr>
+                </thead>
+                <tbody id="tableBody" class="divide-y divide-slate-200 bg-white">
+                <!-- 动态行将插入这里 -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 空状态 -->
+        <div id="emptyState" class="hidden py-12 text-center">
+            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-slate-900 mb-1">暂无数据</h3>
+            <p class="text-slate-500 text-sm">请上传 GeoJSON 文件或加载示例数据</p>
+        </div>
+    </div>
+</main>
+
+<!-- OpenLayers JS -->
+<script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
+
+<script>
+    // 全局变量
+    let map;
+    let vectorLayer;
+    let vectorSource;
+    let selectInteraction;
+    let selectedFeatures = new Set();
+    let allFeatures = [];
+    let currentGeoJSON = null;
+
+    // 初始化地图
+    function initMap() {
+        // 创建矢量源
+        vectorSource = new ol.source.Vector();
+
+        // 创建矢量图层
+        vectorLayer = new ol.layer.Vector({
+            source: vectorSource,
+            style: function(feature) {
+                const isSelected = selectedFeatures.has(feature.getId());
+                return new ol.style.Style({
+                    fill: new ol.style.Fill({
+                        color: isSelected ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.1)'
+                    }),
+                    stroke: new ol.style.Stroke({
+                        color: isSelected ? '#2563eb' : '#3b82f6',
+                        width: isSelected ? 3 : 2
+                    }),
+                    image: new ol.style.Circle({
+                        radius: isSelected ? 8 : 6,
+                        fill: new ol.style.Fill({
+                            color: isSelected ? '#2563eb' : '#3b82f6'
+                        }),
+                        stroke: new ol.style.Stroke({
+                            color: '#ffffff',
+                            width: 2
+                        })
+                    })
+                });
+            }
+        });
+
+        // 创建地图
+        map = new ol.Map({
+            target: 'map',
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM({
+                        url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                    })
+                }),
+                vectorLayer
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([104.195397, 35.86166]), // 中国中心
+                zoom: 4
+            })
+        });
+
+        // 添加选择交互
+        selectInteraction = new ol.interaction.Select({
+            layers: [vectorLayer],
+            style: function(feature) {
+                return new ol.style.Style({
+                    fill: new ol.style.Fill({
+                        color: 'rgba(245, 158, 11, 0.3)'
+                    }),
+                    stroke: new ol.style.Stroke({
+                        color: '#f59e0b',
+                        width: 3
+                    }),
+                    image: new ol.style.Circle({
+                        radius: 8,
+                        fill: new ol.style.Fill({
+                            color: '#f59e0b'
+                        }),
+                        stroke: new ol.style.Stroke({
+                            color: '#ffffff',
+                            width: 2
+                        })
+                    })
+                });
+            }
+        });
+
+        selectInteraction.on('select', function(e) {
+            e.selected.forEach(feature => {
+                const id = feature.getId();
+                selectedFeatures.add(id);
+                highlightTableRow(id);
+            });
+
+            e.deselected.forEach(feature => {
+                const id = feature.getId();
+                selectedFeatures.delete(id);
+                unhighlightTableRow(id);
+            });
+
+            updateSelectedCount();
+        });
+
+        map.addInteraction(selectInteraction);
+
+        // 点击地图要素时同步到表格
+        map.on('click', function(e) {
+            const feature = map.forEachFeatureAtPixel(e.pixel, function(feature) {
+                return feature;
+            });
+
+            if (feature) {
+                const id = feature.getId();
+                scrollToRow(id);
+            }
+        });
+    }
+
+    async function handleShpFileUpload(event) {
+        const files = Array.from(event.target.files);
+        if (files.length === 0) return;
+
+        // 构建文件对象
+        const fileObject = {};
+        for (const file of files) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (['shp', 'dbf', 'prj', 'cpg'].includes(ext)) {
+                const arrayBuffer = await file.arrayBuffer();
+                fileObject[ext] = arrayBuffer;
+            }
+        }
+
+        // 检查是否包含必需的 .shp 文件
+        if (!fileObject.shp) {
+            alert('请上传 .shp 文件！');
+            return;
+        }
+
+        try {
+            // 解析 Shapefile
+            const geojson = await shp(fileObject);
+            loadGeoJSON(geojson); // 调用现有函数加载 GeoJSON
+        } catch (error) {
+            alert('解析 Shapefile 失败: ' + error.message);
+        }
+
+        // 重置文件输入
+        event.target.value = '';
+    }
+
+    // 加载示例数据（中国主要城市）
+    function loadSampleData() {
+        const sampleGeoJSON = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "北京",
+                        "population": 21893095,
+                        "province": "北京市",
+                        "type": "直辖市",
+                        "gdp": 40269.6,
+                        "area": 16410
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [116.4074, 39.9042]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "上海",
+                        "population": 24237800,
+                        "province": "上海市",
+                        "type": "直辖市",
+                        "gdp": 43214.9,
+                        "area": 6340
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [121.4737, 31.2304]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "广州",
+                        "population": 18676600,
+                        "province": "广东省",
+                        "type": "副省级城市",
+                        "gdp": 28231.9,
+                        "area": 7434
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [113.2644, 23.1291]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "深圳",
+                        "population": 17560000,
+                        "province": "广东省",
+                        "type": "经济特区",
+                        "gdp": 32387.7,
+                        "area": 1997
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [114.0579, 22.5431]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "成都",
+                        "population": 20937700,
+                        "province": "四川省",
+                        "type": "省会城市",
+                        "gdp": 19916.9,
+                        "area": 14335
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [104.0668, 30.5728]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "杭州",
+                        "population": 11936000,
+                        "province": "浙江省",
+                        "type": "省会城市",
+                        "gdp": 18109.4,
+                        "area": 16850
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [120.1551, 30.2741]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "武汉",
+                        "population": 11212000,
+                        "province": "湖北省",
+                        "type": "省会城市",
+                        "gdp": 17716.8,
+                        "area": 8569
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [114.3054, 30.5931]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "西安",
+                        "population": 12952900,
+                        "province": "陕西省",
+                        "type": "省会城市",
+                        "gdp": 10688.3,
+                        "area": 10108
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [108.9398, 34.3416]
+                    }
+                }
+            ]
+        };
+
+        loadGeoJSON(sampleGeoJSON);
+    }
+    async function handleShpFileUpload(event) {
+        const files = Array.from(event.target.files);
+        if (files.length === 0) return;
+
+        // 构建文件对象
+        const fileObject = {};
+        for (const file of files) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (['shp', 'dbf', 'prj', 'cpg'].includes(ext)) {
+                const arrayBuffer = await file.arrayBuffer();
+                fileObject[ext] = arrayBuffer;
+            }
+        }
+
+        // 检查是否包含必需的 .shp 文件
+        if (!fileObject.shp) {
+            alert('请上传 .shp 文件！');
+            return;
+        }
+
+        try {
+            // 解析 Shapefile
+            const geojson = await shp(fileObject);
+            loadGeoJSON(geojson); // 调用现有函数加载 GeoJSON
+        } catch (error) {
+            alert('解析 Shapefile 失败: ' + error.message);
+        }
+
+        // 重置文件输入
+        event.target.value = '';
+    }
+
+
+    // 处理文件上传
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const fileName = file.name.toLowerCase();
+        const reader = new FileReader();
+
+        if (fileName.endsWith('.zip')) {
+            // 处理 .shp 文件（打包为 .zip）
+            reader.onload = function(e) {
+                try {
+                    shp(e.target.result).then(function(geojson) {
+                        loadGeoJSON(geojson);
+                    }).catch(function(error) {
+                        alert('无法解析 Shapefile: ' + error.message);
+                    });
+                } catch (error) {
+                    alert('读取文件失败: ' + error.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        } else if (fileName.endsWith('.json') || fileName.endsWith('.geojson')) {
+            // 处理 GeoJSON 文件
+            reader.onload = function(e) {
+                try {
+                    const geojson = JSON.parse(e.target.result);
+                    loadGeoJSON(geojson);
+                } catch (error) {
+                    alert('无效的 GeoJSON 文件: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        } else {
+            alert('不支持的文件类型，请上传 .zip 或 .geojson 文件');
+        }
+
+        // 重置文件输入
+        event.target.value = '';
+    }
+
+
+    // 加载 GeoJSON 数据
+    function loadGeoJSON(geojson) {
+        currentGeoJSON = geojson;
+
+        // 清空现有数据
+        vectorSource.clear();
+        selectedFeatures.clear();
+        allFeatures = [];
+
+        // 解析 GeoJSON
+        const features = new ol.format.GeoJSON().readFeatures(geojson, {
+            featureProjection: 'EPSG:3857'
+        });
+
+        // 为要素设置 ID
+        features.forEach((feature, index) => {
+            feature.setId('feature_' + index);
+            allFeatures.push(feature);
+        });
+
+        vectorSource.addFeatures(features);
+
+        // 缩放到数据范围
+        if (features.length > 0) {
+            map.getView().fit(vectorSource.getExtent(), {
+                padding: [50, 50, 50, 50],
+                maxZoom: 16
+            });
+        }
+
+        // 更新统计信息
+        updateStats(features, geojson);
+
+        // 渲染表格
+        renderTable(features);
+
+        // 显示成功提示
+        showNotification('成功加载 ' + features.length + ' 个要素', 'success');
+    }
+
+    // 更新统计信息
+    function updateStats(features, geojson) {
+        document.getElementById('featureCount').textContent = features.length;
+        document.getElementById('selectedCount').textContent = '0';
+
+        // 获取几何类型
+        let geomType = '混合';
+        if (features.length > 0) {
+            const firstGeom = features[0].getGeometry().getType();
+            const allSame = features.every(f => f.getGeometry().getType() === firstGeom);
+            if (allSame) {
+                geomType = firstGeom;
+            }
+        }
+        document.getElementById('geometryType').textContent = geomType;
+
+        // 获取属性字段数
+        let fieldCount = 0;
+        if (features.length > 0) {
+            const props = features[0].getProperties();
+            fieldCount = Object.keys(props).filter(k => k !== 'geometry').length;
+        }
+        document.getElementById('fieldCount').textContent = fieldCount;
+    }
+
+    // 渲染表格
+    function renderTable(features) {
+        const thead = document.getElementById('tableHeader');
+        const tbody = document.getElementById('tableBody');
+        const emptyState = document.getElementById('emptyState');
+
+        // 清空现有内容
+        // 保留前两列（复选框和序号）
+        while (thead.children.length > 2) {
+            thead.removeChild(thead.lastChild);
+        }
+        tbody.innerHTML = '';
+
+        if (features.length === 0) {
+            emptyState.classList.remove('hidden');
+            document.getElementById('tableBadge').textContent = '0 条记录';
+            return;
+        }
+
+        emptyState.classList.add('hidden');
+        document.getElementById('tableBadge').textContent = features.length + ' 条记录';
+
+        // 获取所有属性字段
+        const sampleProps = features[0].getProperties();
+        const fields = Object.keys(sampleProps).filter(key => key !== 'geometry');
+
+        // 创建表头
+        fields.forEach(field => {
+            const th = document.createElement('th');
+            th.className = 'px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200';
+            th.textContent = field;
+            thead.appendChild(th);
+        });
+
+        // 创建表格行
+        features.forEach((feature, index) => {
+            const props = feature.getProperties();
+            const id = feature.getId();
+            const tr = document.createElement('tr');
+            tr.className = 'table-row-hover transition-colors';
+            tr.dataset.featureId = id;
+            tr.onclick = () => toggleFeatureSelection(id);
+
+            // 复选框列
+            const tdCheckbox = document.createElement('td');
+            tdCheckbox.className = 'px-6 py-4 whitespace-nowrap text-sm text-slate-900 border-b border-slate-100';
+            tdCheckbox.innerHTML = `<input type="checkbox" class="row-checkbox rounded border-slate-300 text-blue-600 focus:ring-blue-500" data-id="${id}" onchange="event.stopPropagation(); toggleFeatureSelection('${id}')">`;
+            tr.appendChild(tdCheckbox);
+
+            // 序号列
+            const tdIndex = document.createElement('td');
+            tdIndex.className = 'px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 border-b border-slate-100';
+            tdIndex.textContent = index + 1;
+            tr.appendChild(tdIndex);
+
+            // 属性列
+            fields.forEach(field => {
+                const td = document.createElement('td');
+                td.className = 'px-6 py-4 whitespace-nowrap text-sm text-slate-600 border-b border-slate-100';
+                const value = props[field];
+
+                // 格式化显示
+                if (typeof value === 'number') {
+                    if (field.toLowerCase().includes('population') || field.toLowerCase().includes('pop')) {
+                        td.textContent = value.toLocaleString();
+                    } else if (field.toLowerCase().includes('gdp')) {
+                        td.textContent = value.toLocaleString() + ' 亿元';
+                    } else if (field.toLowerCase().includes('area')) {
+                        td.textContent = value.toLocaleString() + ' km²';
+                    } else {
+                        td.textContent = value.toLocaleString();
+                    }
+                } else {
+                    td.textContent = value !== null && value !== undefined ? value : '-';
+                }
+
+                tr.appendChild(td);
+            });
+
+            tbody.appendChild(tr);
+        });
+    }
+
+    // 切换要素选择状态
+    function toggleFeatureSelection(id) {
+        if (selectedFeatures.has(id)) {
+            selectedFeatures.delete(id);
+            unhighlightTableRow(id);
+
+            // 取消地图选择
+            const feature = vectorSource.getFeatureById(id);
+            if (feature) {
+                selectInteraction.getFeatures().remove(feature);
+            }
+        } else {
+            selectedFeatures.add(id);
+            highlightTableRow(id);
+
+            // 添加到地图选择
+            const feature = vectorSource.getFeatureById(id);
+            if (feature) {
+                selectInteraction.getFeatures().push(feature);
+            }
+        }
+
+        updateCheckboxState(id);
+        updateSelectedCount();
+    }
+
+    // 高亮表格行
+    function highlightTableRow(id) {
+        const row = document.querySelector(`tr[data-feature-id="${id}"]`);
+        if (row) {
+            row.classList.add('table-row-selected');
+            const checkbox = row.querySelector('.row-checkbox');
+            if (checkbox) checkbox.checked = true;
+        }
+    }
+
+    // 取消高亮表格行
+    function unhighlightTableRow(id) {
+        const row = document.querySelector(`tr[data-feature-id="${id}"]`);
+        if (row) {
+            row.classList.remove('table-row-selected');
+            const checkbox = row.querySelector('.row-checkbox');
+            if (checkbox) checkbox.checked = false;
+        }
+    }
+
+    // 更新复选框状态
+    function updateCheckboxState(id) {
+        const checkbox = document.querySelector(`.row-checkbox[data-id="${id}"]`);
+        if (checkbox) {
+            checkbox.checked = selectedFeatures.has(id);
+        }
+    }
+
+    // 滚动到指定行
+    function scrollToRow(id) {
+        const row = document.querySelector(`tr[data-feature-id="${id}"]`);
+        if (row) {
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // 临时高亮
+            row.style.backgroundColor = '#fef3c7';
+            setTimeout(() => {
+                row.style.backgroundColor = '';
+            }, 1000);
+        }
+    }
+
+    // 更新选中计数
+    function updateSelectedCount() {
+        document.getElementById('selectedCount').textContent = selectedFeatures.size;
+    }
+
+    // 全选/取消全选
+    function toggleSelectAll() {
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.row-checkbox');
+
+        if (selectAllCheckbox.checked) {
+            allFeatures.forEach(feature => {
+                const id = feature.getId();
+                if (!selectedFeatures.has(id)) {
+                    selectedFeatures.add(id);
+                    selectInteraction.getFeatures().push(feature);
+                }
+            });
+            checkboxes.forEach(cb => cb.checked = true);
+            document.querySelectorAll('tbody tr').forEach(tr => tr.classList.add('table-row-selected'));
+        } else {
+            selectedFeatures.clear();
+            selectInteraction.getFeatures().clear();
+            checkboxes.forEach(cb => cb.checked = false);
+            document.querySelectorAll('tbody tr').forEach(tr => tr.classList.remove('table-row-selected'));
+        }
+
+        updateSelectedCount();
+    }
+
+    // 清除选择
+    function clearSelection() {
+        selectedFeatures.clear();
+        selectInteraction.getFeatures().clear();
+        document.getElementById('selectAll').checked = false;
+        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+        document.querySelectorAll('tbody tr').forEach(tr => tr.classList.remove('table-row-selected'));
+        updateSelectedCount();
+    }
+
+    // 缩放至全图
+    function zoomToExtent() {
+        if (vectorSource.getFeatures().length > 0) {
+            map.getView().fit(vectorSource.getExtent(), {
+                padding: [50, 50, 50, 50],
+                maxZoom: 16,
+                duration: 1000
+            });
+        }
+    }
+
+    // 搜索过滤
+    function filterTable() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.querySelectorAll('#tableBody tr');
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // 导出 CSV
+    function exportToCSV() {
+        if (allFeatures.length === 0) {
+            alert('没有数据可导出');
+            return;
+        }
+
+        const fields = Object.keys(allFeatures[0].getProperties()).filter(k => k !== 'geometry');
+        let csv = '\uFEFF'; // BOM for Excel
+
+        // 表头
+        csv += '序号,' + fields.join(',') + '\n';
+
+        // 数据行
+        allFeatures.forEach((feature, index) => {
+            const props = feature.getProperties();
+            const values = [index + 1];
+            fields.forEach(field => {
+                let val = props[field];
+                if (typeof val === 'string' && val.includes(',')) {
+                    val = `"${val}"`;
+                }
+                values.push(val);
+            });
+            csv += values.join(',') + '\n';
+        });
+
+        // 下载
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'geojson_attributes_' + new Date().getTime() + '.csv';
+        link.click();
+    }
+
+    // 显示通知
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-medium fade-in z-50 ${
+            type === 'success' ? 'bg-emerald-500' : 'bg-red-500'
+        }`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        initMap();
+
+        // 自动加载示例数据
+        setTimeout(() => {
+            loadSampleData();
+        }, 500);
+    });
+</script>
+</body>
+</html>
