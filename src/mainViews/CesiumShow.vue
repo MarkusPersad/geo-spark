@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {CesiumViewer} from "@/components/cesium";
+import {CesiumViewer, Imagery,Terrain,Zoom} from "@/components/cesium";
 defineOptions({
   name: "CesiumShow"
 })
@@ -8,5 +8,10 @@ defineOptions({
 
 <template>
   <CesiumViewer>
+    <Zoom />
+    <Imagery />
+    <suspense>
+      <Terrain />
+    </suspense>
   </CesiumViewer>
 </template>

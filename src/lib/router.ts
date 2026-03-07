@@ -21,7 +21,7 @@ export const router = () =>{
                     children: [
                         {
                             path: '',
-                            redirect: '/data'
+                            redirect: '/map'
                         },
                         {
                             path: '/map',

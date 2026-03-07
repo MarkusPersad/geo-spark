@@ -25,7 +25,7 @@ onUnmounted(() => {
 })
 </script>
 <template>
-  <div ref="viewer" class="min-w-full min-h-full">
+  <div ref="viewer" class="min-w-full min-h-full relative">
     <slot v-if="isReady" />
   </div>
 </template>

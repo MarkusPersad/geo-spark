@@ -6,6 +6,7 @@
         "REGISTER": "/user/register",
         "VERIFICATIONS": "/user/sendVerifyCode",
         "Refresh": "/refresh",
-        "LOGOUT": "/user/logout"
+        "LOGOUT": "/user/logout",
+        "IMAGERY": "/proxy/imagery"
     }
 }

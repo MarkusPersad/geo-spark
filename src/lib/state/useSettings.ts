@@ -62,19 +62,12 @@ export const useSettings = defineStore('settings', () =>{
         }
         await AppStore.Save()
     }
-    const sync = async () =>{
-        for (const [key, value] of Object.entries(settings.value!)) {
-            await AppStore.SetValue(key,value)
-        }
-        return await AppStore.Save()
-    }
     watch(() => toRef(settings.value?.IonToken),  (newValue) =>{
        if (newValue.value){
            Ion.defaultAccessToken = newValue.value
        }
     },{immediate: true})
     return {
-        sync,
         getSettings,
         updateUser,
         updateSettings,
