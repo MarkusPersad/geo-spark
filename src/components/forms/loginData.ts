@@ -41,7 +41,6 @@ const sendVerifyCode = async (sendData:{email: string,userName: string}) => {
             {
                 method: 'POST',
                 body:JSON.stringify(sendData),
-                headers: Http.getHeaders()
             })
         const response = await res.json()
         if(!res.ok || response.code !== 0)
@@ -76,7 +75,6 @@ const login = async (login:{email:string,password:string}) =>{
         let url = `${BaseURL}${API.LOGIN}`
         let res = await Http.useFetch(url,{
             method: 'POST',
-            headers: Http.getHeaders(),
             body:JSON.stringify(login)
         })
         const response = await res.json()

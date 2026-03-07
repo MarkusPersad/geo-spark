@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import {inject, ref, toRef} from "vue";
+import {inject, ref} from "vue";
 import {CesiumProvider,cesiumProviderSymbol} from "@/components/cesium";
 import {ButtonGroup} from "@/components/ui/button-group";
 import {Button} from "@/components/ui/button";
@@ -10,7 +10,7 @@ import {Fullscreen} from "cesium";
 
 const cesiumProvider = inject<CesiumProvider>(cesiumProviderSymbol)
 
-const isFullScreen = toRef(Fullscreen.fullscreen)
+const isFullScreen = ref(false)
 
 const zoomIn = () => {
   if (cesiumProvider?.viewer){
@@ -29,6 +29,7 @@ const toggleFullScreen = () => {
     } else {
       Fullscreen.exitFullscreen()
     }
+    isFullScreen.value = !isFullScreen.value
   }
 }
 
@@ -41,7 +42,7 @@ const toggleFullScreen = () => {
       class="h-fit absolute right-2 top-2 z-10"
   >
     <Button variant="outline" size="icon" @click="toggleFullScreen">
-      <ExpandIcon v-if="isFullScreen" />
+      <ExpandIcon v-if="!isFullScreen" />
       <ShrinkIcon v-else />
     </Button>
     <Separator/>

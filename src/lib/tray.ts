@@ -49,7 +49,7 @@ export const setTray = async () => {
                 },
                 {
                     id: "quit",
-                    text: "推出",
+                    text: "退出",
                     action: async () =>{
                         try {
                             await logout()
