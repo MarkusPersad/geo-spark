@@ -1,16 +1,21 @@
 <script setup lang="ts">
 
-import {inject, ref} from "vue";
+import {inject} from "vue";
 import {CesiumProvider,cesiumProviderSymbol} from "@/components/cesium";
 import {ButtonGroup} from "@/components/ui/button-group";
 import {Button} from "@/components/ui/button";
 import { MinusIcon, PlusIcon,ExpandIcon,ShrinkIcon } from 'lucide-vue-next'
 import {Separator} from "@/components/ui/separator";
 import {Fullscreen} from "cesium";
+import {useFullScreen} from "@/lib/state";
+import {storeToRefs} from "pinia";
 
 const cesiumProvider = inject<CesiumProvider>(cesiumProviderSymbol)
 
-const isFullScreen = ref(false)
+const fullScreenUse = useFullScreen()
+
+const { fullScreen } = storeToRefs(fullScreenUse)
+
 
 const zoomIn = () => {
   if (cesiumProvider?.viewer){
@@ -25,11 +30,11 @@ const zoomOut = () => {
 const toggleFullScreen = () => {
   if (cesiumProvider?.viewer){
     if (!Fullscreen.fullscreen){
-      Fullscreen.requestFullscreen(cesiumProvider.viewer.container)
+      Fullscreen.requestFullscreen(document.body)
     } else {
       Fullscreen.exitFullscreen()
     }
-    isFullScreen.value = !isFullScreen.value
+    fullScreenUse.changeFullScreen()
   }
 }
 
@@ -42,7 +47,7 @@ const toggleFullScreen = () => {
       class="h-fit absolute right-2 top-2 z-10"
   >
     <Button variant="outline" size="icon" @click="toggleFullScreen">
-      <ExpandIcon v-if="!isFullScreen" />
+      <ExpandIcon v-if="!fullScreen" />
       <ShrinkIcon v-else />
     </Button>
     <Separator/>

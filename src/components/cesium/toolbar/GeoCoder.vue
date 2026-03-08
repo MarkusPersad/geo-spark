@@ -1,14 +1,47 @@
 <script setup lang="ts">
-import {Field} from "@/components/ui/field";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {SearchIcon} from 'lucide-vue-next'
-import {inject, Ref, ref} from "vue";
+import {computed, inject, Ref, ref} from "vue";
 import { BaseURL,API } from '@/assets/default.json'
 import {Http} from "@/lib";
 import {toast} from "vue-sonner";
 import {CesiumProvider,cesiumProviderSymbol} from "@/components/cesium";
+import {useMediaQuery} from '@vueuse/core'
 import {Cartesian3} from "cesium";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent, DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import {Label} from "@/components/ui/label";
+import {
+  Drawer, DrawerClose,
+  DrawerContent,
+  DrawerDescription, DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger
+} from "@/components/ui/drawer";
+
+const isDesktop = useMediaQuery('(min-width: 640px)')
+
+const Modal = computed(() => ({
+  Root: isDesktop.value ? Dialog : Drawer,
+  Trigger: isDesktop.value ? DialogTrigger : DrawerTrigger,
+  Content: isDesktop.value ? DialogContent : DrawerContent,
+  Header: isDesktop.value ? DialogHeader : DrawerHeader,
+  Title: isDesktop.value ? DialogTitle : DrawerTitle,
+  Description: isDesktop.value ? DialogDescription : DrawerDescription,
+  Footer: isDesktop.value ? DialogFooter : DrawerFooter,
+  Close: isDesktop.value ? DialogClose : DrawerClose,
+}))
+
+const open = ref(false)
 
 const cesiumProvider = inject<CesiumProvider>(cesiumProviderSymbol)
 
@@ -37,15 +70,45 @@ const search = async () =>{
     }
   }catch (err:any) {
    toast.error(err.message||String(err))
+  } finally {
+    searchText.value = ''
   }
 }
 </script>
 
 <template>
-  <Field orientation="horizontal">
-    <Input type="text" placeholder="请输入地址" v-model="searchText" />
-    <Button variant="default" size="icon" @click="search">
-      <SearchIcon />
-    </Button>
-  </Field>
+    <Component :is="Modal.Root" v-model:open="open">
+      <Component :is="Modal.Trigger">
+        <Button variant="outline" size="icon">
+          <SearchIcon />
+        </Button>
+      </Component>
+        <Component :is="Modal.Content" class="sm:max-w-md" :class="[{ 'px-2 pb-8 *:px-4': !isDesktop },]" >
+          <Component :is="Modal.Header">
+            <Component :is="Modal.Title">
+              GeoCoder
+            </Component>
+          </Component>
+          <div class="flex items-center gap-2">
+            <div class="grid flex-1 gap-2">
+              <Label for="location" class="sr-only">
+                Location
+              </Label>
+              <Input
+                  id="location"
+                  default-value="北京市天安门"
+                  read-only
+                  v-model="searchText"
+              />
+            </div>
+          </div>
+          <Component :is="Modal.Footer" class="pt-4">
+            <Component :is="Modal.Close" as-child>
+              <Button variant="outline" size="icon" @click="search">
+                <SearchIcon />
+              </Button>
+            </Component>
+          </Component>
+        </Component>
+    </Component>
 </template>
