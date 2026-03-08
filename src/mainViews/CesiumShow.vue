@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {CesiumViewer, GeoCoder, Imagery, TerrainToggle, Zoom} from "@/components/cesium";
+import {BaseLayerSwitch, CesiumViewer, GeoCoder, TerrainToggle, Zoom} from "@/components/cesium";
 import {FloatingButton} from "@/components/data";
 defineOptions({
   name: "CesiumShow"
@@ -13,9 +13,9 @@ defineOptions({
       <template v-slot:up>
         <TerrainToggle />
         <GeoCoder />
+        <BaseLayerSwitch />
       </template>
     </FloatingButton>
     <Zoom />
-    <Imagery />
   </CesiumViewer>
 </template>

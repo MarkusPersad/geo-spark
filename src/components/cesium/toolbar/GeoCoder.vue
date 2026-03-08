@@ -45,7 +45,7 @@ const open = ref(false)
 
 const cesiumProvider = inject<CesiumProvider>(cesiumProviderSymbol)
 
-const searchText:Ref<string> = ref('')
+const searchText:Ref<string> = ref('北京市天安门')
 
 const search = async () =>{
   try {
@@ -96,7 +96,6 @@ const search = async () =>{
               </Label>
               <Input
                   id="location"
-                  default-value="北京市天安门"
                   read-only
                   v-model="searchText"
               />

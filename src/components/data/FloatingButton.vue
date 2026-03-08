@@ -14,7 +14,8 @@
       class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3"
   >
     <TransitionGroup name="fab-up">
-      <div v-if="isOpen" class="flex flex-col items-end gap-3 mb-2">
+      <!-- ✅ v-show 代替 v-if，保持 DOM 存在 -->
+      <div v-show="isOpen" class="flex flex-col items-end gap-3 mb-2">
         <slot name="up"></slot>
       </div>
     </TransitionGroup>
@@ -44,7 +45,8 @@
     </Button>
 
     <TransitionGroup name="fab-left">
-      <div v-if="isOpen" class="flex flex-row items-center gap-3">
+      <!-- ✅ v-show 代替 v-if -->
+      <div v-show="isOpen" class="flex flex-row items-center gap-3">
         <slot name="left"></slot>
       </div>
     </TransitionGroup>
@@ -76,7 +78,7 @@ defineExpose({
 </script>
 
 <style scoped>
-/* 向上展开的动画 */
+/* 动画需要调整：v-show 使用 opacity/visibility 而不是插入/移除 DOM */
 .fab-up-enter-active,
 .fab-up-leave-active {
   transition: all 0.3s ease;
@@ -85,6 +87,8 @@ defineExpose({
 .fab-up-leave-to {
   opacity: 0;
   transform: translateY(20px);
+  /* v-show 配合 Transition 需要确保 leave-to 是隐藏状态 */
+  pointer-events: none;
 }
 
 /* 向左侧展开的动画 */
@@ -96,5 +100,6 @@ defineExpose({
 .fab-left-leave-to {
   opacity: 0;
   transform: translateX(20px);
+  pointer-events: none;
 }
 </style>
