@@ -4,7 +4,7 @@ import {inject} from "vue";
 import {CesiumProvider,cesiumProviderSymbol} from "@/components/cesium";
 import {ButtonGroup} from "@/components/ui/button-group";
 import {Button} from "@/components/ui/button";
-import { MinusIcon, PlusIcon,ExpandIcon,ShrinkIcon } from 'lucide-vue-next'
+import { MinusIcon, PlusIcon,ExpandIcon,ShrinkIcon,HomeIcon } from 'lucide-vue-next'
 import {Separator} from "@/components/ui/separator";
 import {Fullscreen} from "cesium";
 import {useFullScreen} from "@/lib/state";
@@ -27,6 +27,13 @@ const zoomOut = () => {
     cesiumProvider.viewer.camera.zoomOut(cesiumProvider.viewer.camera.positionCartographic.height*0.2)
   }
 }
+
+const FlyHome = () => {
+  if (cesiumProvider?.viewer){
+    cesiumProvider.viewer.camera.flyHome(2.0)
+  }
+}
+
 const toggleFullScreen = () => {
   if (cesiumProvider?.viewer){
     if (!Fullscreen.fullscreen){
@@ -49,6 +56,10 @@ const toggleFullScreen = () => {
     <Button variant="outline" size="icon" @click="toggleFullScreen">
       <ExpandIcon v-if="!fullScreen" />
       <ShrinkIcon v-else />
+    </Button>
+    <Separator/>
+    <Button variant="outline" size="icon" @click="FlyHome">
+      <HomeIcon />
     </Button>
     <Separator/>
     <Button variant="outline" size="icon" @click="zoomIn">

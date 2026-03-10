@@ -13,6 +13,8 @@ defineOptions({
       <template v-slot:up>
         <TerrainToggle />
         <GeoCoder />
+      </template>
+      <template v-slot:left>
         <BaseLayerSwitch />
       </template>
     </FloatingButton>

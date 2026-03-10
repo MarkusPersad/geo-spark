@@ -37,6 +37,7 @@
     "pinia": "^3.0.4",
     "proj4": "^2.20.4",
     "reka-ui": "^2.9.0",
+    "shpjs": "^6.2.0",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.1",
     "vaul-vue": "^0.4.1",
