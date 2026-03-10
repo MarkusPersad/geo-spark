@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {Button} from "@/components/ui/button";
-import {ShieldCloseIcon,Layers2Icon} from 'lucide-vue-next'
+import {XIcon,Layers2Icon} from 'lucide-vue-next'
 import {computed, Ref, ref} from "vue";
 import {useMediaQuery} from '@vueuse/core'
 import {
@@ -84,7 +84,7 @@ const imageryComponent = computed(() => {
       <Component :is="Modal.Footer" class="pt-4">
         <Component :is="Modal.Close" as-child>
           <Button variant="outline" size="icon">
-            <ShieldCloseIcon />
+            <XIcon />
           </Button>
         </Component>
       </Component>
