@@ -19,7 +19,9 @@ const { fullScreen } = storeToRefs(useFullScreen())
 <template>
   <Toaster position="top-center" rich-colors />
   <SidebarProvider>
-    <AppSidebar v-if="!fullScreen" />
+    <Suspense>
+      <AppSidebar v-if="!fullScreen" />
+    </Suspense>
     <SidebarInset>
       <div class="flex flex-1  p-0">
         <RouterView v-slot="{ Component }">

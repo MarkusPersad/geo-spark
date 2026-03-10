@@ -15,16 +15,20 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import {useSettings} from "@/lib/state";
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: "icon",
 })
 
+const { getSettings } = useSettings ()
+
+const settings = await getSettings()
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "https://github.com/shadcn.png",
+    name: settings.User.UserName,
+    email: settings.User.Email,
+    avatar: settings.User.Avatar|| "https://github.com/shadcn.png",
   },
   navMain:[
     {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {Button} from "@/components/ui/button";
 import {ShieldCloseIcon,Layers2Icon} from 'lucide-vue-next'
-import {computed, inject, Ref, ref} from "vue";
+import {computed, Ref, ref} from "vue";
 import {useMediaQuery} from '@vueuse/core'
 import {
   Dialog,
