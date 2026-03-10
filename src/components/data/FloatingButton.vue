@@ -9,7 +9,7 @@
   </Button>
 
   <!-- 展开模式 -->
-  <div v-else class="fixed bottom-6 right-6 z-50">
+  <div v-else class="fixed bottom-14 right-6 z-50">
     <!-- 上方按钮组 -->
     <div v-if="$slots.up" class="absolute bottom-full right-0 mb-3 flex flex-col items-end gap-3">
       <Transition name="fab-up">

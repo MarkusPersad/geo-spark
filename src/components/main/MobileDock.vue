@@ -23,7 +23,7 @@ const items = [
 </script>
 
 <template>
-  <div class="ds-dock w-full flex items-center justify-between">
+  <div class="ds-dock ds-dock-xs w-full flex items-center justify-between ds-bg-neutral  ds-text-neutral-content">
     <button
         variant="outline"
         v-for="item in items"
