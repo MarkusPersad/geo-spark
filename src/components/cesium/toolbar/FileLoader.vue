@@ -71,9 +71,9 @@ const selectGeoSpatialFile = async () =>{
   }
 }
 const load = async () => {
-  if (cesiumProvider?.viewer){
-    if (geospatialFile.value.endsWith('.geojson')|| geospatialFile.value.endsWith('.json')){
-       await LoadGeoJSON(geospatialFile.value,cesiumProvider.viewer)
+  if (cesiumProvider?.viewer) {
+    if (geospatialFile.value.endsWith('.geojson') || geospatialFile.value.endsWith('.json')) {
+      await LoadGeoJSON(geospatialFile.value, cesiumProvider.viewer)
     }
   }
 }
@@ -115,6 +115,9 @@ const reset = () =>{
             加载数据
           </Button>
         </Component>
+        <Button variant="outline" @click="reset">
+          清除数据
+        </Button>
       </Component>
     </Component>
   </Component>
