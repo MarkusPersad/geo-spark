@@ -26,7 +26,7 @@ import {Field} from "@/components/ui/field";
 import {open as openFile} from '@tauri-apps/plugin-dialog';
 import {toast} from "vue-sonner";
 import {CesiumProvider,cesiumProviderSymbol} from "@/components/cesium";
-import {LoadGeoJSON} from "@/lib";
+import {LoadGeoJSON, LoadTileJSON} from "@/lib";
 
 const isDesktop = useMediaQuery('(min-width: 640px)')
 
@@ -60,6 +60,10 @@ const selectGeoSpatialFile = async () =>{
         {
           name:"GeoJSON",
           extensions:['geojson','json']
+        },
+        {
+          name:"3DTiles",
+          extensions: ['json']
         }
       ]
     })
@@ -71,15 +75,23 @@ const selectGeoSpatialFile = async () =>{
   }
 }
 const load = async () => {
-  if (cesiumProvider?.viewer) {
-    if (geospatialFile.value.endsWith('.geojson') || geospatialFile.value.endsWith('.json')) {
-      await LoadGeoJSON(geospatialFile.value, cesiumProvider.viewer)
+  try {
+    if (cesiumProvider?.viewer) {
+      if (geospatialFile.value.endsWith('tileset.json')){
+        await LoadTileJSON(geospatialFile.value, cesiumProvider.viewer)
+      }
+       else if (geospatialFile.value.endsWith('.geojson')|| geospatialFile.value.endsWith('.json')) {
+        await LoadGeoJSON(geospatialFile.value, cesiumProvider.viewer)
+      }
     }
+  } catch (err:any) {
+    toast.error(err.message || String(err))
   }
 }
 const reset = () =>{
   if (cesiumProvider?.viewer){
     cesiumProvider.viewer.dataSources.removeAll()
+    cesiumProvider.viewer.scene.primitives.removeAll()
     geospatialFile.value = ''
   }
 }
@@ -110,14 +122,14 @@ const reset = () =>{
         </div>
       </div>
       <Component :is="Modal.Footer" class="pt-4">
-        <Component :is="Modal.Close" as-child>
-          <Button @click="load" @dblclick="reset">
-            加载数据
-          </Button>
-        </Component>
         <Button variant="outline" @click="reset">
           清除数据
         </Button>
+        <Component :is="Modal.Close" as-child>
+          <Button @click="load">
+            加载数据
+          </Button>
+        </Component>
       </Component>
     </Component>
   </Component>

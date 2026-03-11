@@ -49,6 +49,7 @@
     "fs:allow-document-write",
     "fs:allow-document-read",
     "fs:allow-download-read",
-    "fs:allow-download-write"
+    "fs:allow-download-write",
+    "os:default"
   ]
 }

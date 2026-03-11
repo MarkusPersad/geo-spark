@@ -1,12 +1,20 @@
 mod geo_spark;
 
+use crate::geo_spark::stream_file::get_stream_response;
 use detect_desktop_environment::DesktopEnvironment;
-use tauri::{Manager, State, WindowEvent};
-use geo_spark::shapefile_to_geojson::convert_shapefile_to_geojson;
+use tauri::{
+    Manager, State, WindowEvent,
+    http::{StatusCode, header, response::Builder as ResponseBuilder},
+};
 
 #[tauri::command]
-fn update_state(state: State<geo_spark::states::AppData>, value: bool) {
+fn update_login_state(state: State<geo_spark::states::AppData>, value: bool) {
     state.set_login(value)
+}
+
+#[tauri::command]
+fn update_tileset_base_path_state(state: State<geo_spark::states::AppData>,value: String) {
+    state.set_tileset_base_path(value);
 }
 
 #[tauri::command]
@@ -56,6 +64,21 @@ async fn close_splashscreen(app: tauri::AppHandle) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_os::init())
+        .register_asynchronous_uri_scheme_protocol("stream", move |ctx, request, responder| {
+            let base_path = ctx.app_handle().state::<geo_spark::states::AppData>().get_tileset_base_path();
+            tauri::async_runtime::spawn(async move {
+                let response = get_stream_response(base_path.as_str(),request).await.unwrap_or_else(|err| {
+                    ResponseBuilder::new()
+                        .status(StatusCode::INTERNAL_SERVER_ERROR)
+                        .header(header::CONTENT_TYPE, mime::TEXT_PLAIN_UTF_8.essence_str())
+                        .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                        .body(err.to_string().into_bytes())
+                        .unwrap()
+                });
+                responder.respond(response);
+            });
+        })
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .manage(geo_spark::states::AppData::new())
@@ -68,8 +91,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             close_splashscreen,
             get_desktop_environment,
-            update_state,
-            convert_shapefile_to_geojson
+            update_login_state,
+            update_tileset_base_path_state
         ])
         .setup(|app| {
             let main_window = app.get_webview_window("main").unwrap();
