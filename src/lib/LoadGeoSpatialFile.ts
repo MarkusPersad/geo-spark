@@ -27,7 +27,6 @@ export const LoadTileJSON =async (file:string,viewer:Viewer) => {
     }))
     await viewer.zoomTo(tileset)
 }
-
 function getDirectoryPath(filePath: string): string {
     // 统一处理正反斜杠，找到最后一个分隔符
     const normalized = filePath.replace(/\\/g, '/');

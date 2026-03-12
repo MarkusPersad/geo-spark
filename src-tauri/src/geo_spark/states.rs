@@ -6,6 +6,7 @@ use std::sync::{ atomic::{AtomicBool, Ordering}, RwLock};
 pub struct AppData {
     pub is_login: AtomicBool,
     pub tileset_base_path: RwLock<String>,
+    pub shapefile_base_path: RwLock<String>,
 }
 
 impl AppData {
@@ -13,6 +14,7 @@ impl AppData {
         Self {
             is_login: AtomicBool::new(false),
             tileset_base_path: RwLock::new(String::new()),
+            shapefile_base_path: RwLock::new(String::new()),
         }
     }
 
@@ -28,5 +30,11 @@ impl AppData {
     }
     pub fn get_tileset_base_path(&self) -> String {
         self.tileset_base_path.read().unwrap().clone()
+    }
+    pub fn set_shapefile_base_path(&self, value: String) {
+        *self.shapefile_base_path.write().unwrap() = value;
+    }
+    pub fn get_shapefile_base_path(&self) -> String {
+        self.shapefile_base_path.read().unwrap().clone()
     }
 }
