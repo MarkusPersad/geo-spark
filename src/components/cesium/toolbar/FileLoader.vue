@@ -26,7 +26,7 @@ import {Field} from "@/components/ui/field";
 import {open as openFile} from '@tauri-apps/plugin-dialog';
 import {toast} from "vue-sonner";
 import {CesiumProvider,cesiumProviderSymbol} from "@/components/cesium";
-import {LoadGeoJSON, LoadTileJSON} from "@/lib";
+import {LoadCzml, LoadGeoJSON, LoadTileJSON} from "@/lib";
 
 const isDesktop = useMediaQuery('(min-width: 640px)')
 
@@ -64,6 +64,10 @@ const selectGeoSpatialFile = async () =>{
         {
           name:"3DTiles",
           extensions: ['json']
+        },
+        {
+          name:"CZML",
+          extensions: ['czml']
         }
       ]
     })
@@ -80,6 +84,9 @@ const load = async () => {
       if (geospatialFile.value.endsWith('tileset.json')){
         await LoadTileJSON(geospatialFile.value, cesiumProvider.viewer)
       }
+      else if (geospatialFile.value.endsWith('czml')) {
+        await LoadCzml(geospatialFile.value, cesiumProvider.viewer)
+      }
        else if (geospatialFile.value.endsWith('.geojson')|| geospatialFile.value.endsWith('.json')) {
         await LoadGeoJSON(geospatialFile.value, cesiumProvider.viewer)
       }
@@ -92,6 +99,7 @@ const reset = () =>{
   if (cesiumProvider?.viewer){
     cesiumProvider.viewer.dataSources.removeAll()
     cesiumProvider.viewer.scene.primitives.removeAll()
+    cesiumProvider.viewer.clock.shouldAnimate = false
     geospatialFile.value = ''
   }
 }

@@ -4,7 +4,6 @@ import {InjectionKey, Ref, ShallowRef} from "vue";
 export interface CesiumProvider {
     viewer:Viewer|null
 }
-
 export const cesiumProviderSymbol = Symbol.for('CesiumProvider') as InjectionKey<CesiumProvider>
 
 export const InitViewer = (ref:Readonly<ShallowRef<HTMLDivElement|null>>,provider:CesiumProvider,isReady:Ref<boolean>,home:[number,number,number,number] = [73.5, 3.5, 135, 54]) => {

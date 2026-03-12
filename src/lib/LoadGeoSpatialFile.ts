@@ -1,6 +1,7 @@
 import {
   Cesium3DTileset,
   Color,
+  CzmlDataSource,
   GeoJsonDataSource,
   Resource,
   Viewer,
@@ -21,7 +22,6 @@ const getSchema = () => {
 };
 
 export const LoadGeoJSON = async (file: string, viewer: Viewer) => {
-  viewer.dataSources.removeAll();
   const dataSource = await GeoJsonDataSource.load(convertFileSrc(file), {
     stroke: Color.HOTPINK,
     fill: Color.PINK,
@@ -33,12 +33,10 @@ export const LoadGeoJSON = async (file: string, viewer: Viewer) => {
 };
 
 export const LoadTileJSON = async (file: string, viewer: Viewer) => {
-  viewer.scene.primitives.removeAll();
   const tileset = viewer.scene.primitives.add(
     await Cesium3DTileset.fromUrl(
       new Resource({
         url: `${getSchema()}${file}`,
-        parseUrl: false,
       }),
       {
         dynamicScreenSpaceError: true,
@@ -49,4 +47,11 @@ export const LoadTileJSON = async (file: string, viewer: Viewer) => {
     ),
   );
   await viewer.zoomTo(tileset);
+};
+
+export const LoadCzml = async (file: string, viewer: Viewer) => {
+  viewer.clock.shouldAnimate = true
+  const czmlDataSource = await CzmlDataSource.load(`${getSchema()}${file}`)
+  viewer.dataSources.add(czmlDataSource)
+  await viewer.zoomTo(czmlDataSource)
 };
