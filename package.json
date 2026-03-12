@@ -10,11 +10,6 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@deck.gl/core": "^9.2.11",
-    "@deck.gl/layers": "^9.2.11",
-    "@deck.gl/mapbox": "^9.2.11",
-    "@loaders.gl/core": "^4.3.4",
-    "@loaders.gl/shapefile": "^4.3.4",
     "@tabler/icons-vue": "^3.40.0",
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/vue-table": "^8.21.3",
@@ -34,11 +29,9 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.577.0",
-    "maplibre-gl": "^5.20.0",
     "pinia": "^3.0.4",
     "proj4": "^2.20.4",
     "reka-ui": "^2.9.1",
-    "shpjs": "^6.2.0",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.1",
     "vaul-vue": "^0.4.1",
