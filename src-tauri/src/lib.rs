@@ -13,16 +13,6 @@ fn update_login_state(state: State<geo_spark::states::AppData>, value: bool) {
 }
 
 #[tauri::command]
-fn update_tileset_base_path_state(state: State<geo_spark::states::AppData>,value: String) {
-    state.set_tileset_base_path(value);
-}
-
-#[tauri::command]
-fn update_shapefile_state(state: State<geo_spark::states::AppData>, value: String){
-    state.set_shapefile_base_path(value)
-}
-
-#[tauri::command]
 fn get_desktop_environment() -> String {
     if let Some(desktop) = DesktopEnvironment::detect() {
         match desktop {
@@ -70,12 +60,9 @@ async fn close_splashscreen(app: tauri::AppHandle) {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_os::init())
-        .register_asynchronous_uri_scheme_protocol("stream", move |ctx, request, responder| {
-            let base_path = if request.uri().path().ends_with("shp") || request.uri().path().ends_with("shx") || request.uri().path().ends_with("dbf") || request.uri().path().ends_with("prj")|| request.uri().path().ends_with("cpg") {
-                ctx.app_handle().state::<geo_spark::states::AppData>().get_shapefile_base_path()
-            } else { ctx.app_handle().state::<geo_spark::states::AppData>().get_tileset_base_path() };
+        .register_asynchronous_uri_scheme_protocol("stream", move |_ctx, request, responder| {
             tauri::async_runtime::spawn(async move {
-                let response = get_stream_response(base_path.as_str(),request).await.unwrap_or_else(|err| {
+                let response = get_stream_response(request).await.unwrap_or_else(|err| {
                     ResponseBuilder::new()
                         .status(StatusCode::INTERNAL_SERVER_ERROR)
                         .header(header::CONTENT_TYPE, mime::TEXT_PLAIN_UTF_8.essence_str())
@@ -98,9 +85,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             close_splashscreen,
             get_desktop_environment,
-            update_login_state,
-            update_tileset_base_path_state,
-            update_shapefile_state
+            update_login_state
         ])
         .setup(|app| {
             let main_window = app.get_webview_window("main").unwrap();

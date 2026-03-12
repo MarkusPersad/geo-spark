@@ -68,7 +68,7 @@ const selectGeoSpatialFile = async () =>{
       ]
     })
     if (file){
-      geospatialFile.value = file
+      geospatialFile.value = file.replace(/\\/g, "/");
     }
   } catch (err:any) {
     toast.error(err.message || String(err))

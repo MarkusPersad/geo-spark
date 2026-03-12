@@ -8,16 +8,15 @@ use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncSeekExt};
 
 pub async fn get_stream_response(
-    base_path: &str,
     request: http::Request<Vec<u8>>,
 ) -> Result<http::Response<Vec<u8>>, Box<dyn std::error::Error>> {
-    let path = percent_encoding::percent_decode(&request.uri().path().as_bytes()[1..])
-        .decode_utf8_lossy()
-        .to_string();
-    let mut file_path = PathBuf::from(path);
-    if !has_directory(&file_path){
-        file_path = PathBuf::from(base_path).join(file_path)
+    let mut  path = percent_encoding::percent_decode(&request.uri().path().as_bytes()[1..])
+            .decode_utf8_lossy()
+            .to_string();
+    if !path.contains(":") && !path.starts_with("/") {
+        path = format!("/{}", path)
     }
+    let file_path = PathBuf::from(path);
     if tokio::fs::metadata(&file_path).await.is_err() {
         return Ok(ResponseBuilder::new()
             .status(StatusCode::NOT_FOUND)
@@ -113,8 +112,4 @@ pub async fn get_stream_response(
         resp.body(buf)
     };
     http_response.map_err(Into::into)
-}
-
-fn has_directory(path: &PathBuf) -> bool {
-    path.parent().is_some() && path.parent() != Some(PathBuf::from("").as_ref())
 }
