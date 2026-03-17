@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { DataTable } from '@/components/data'
-import {MapView, OSMLayer,DeckLayer} from "@/components/maplibre";
+import {MapView,DeckLayer} from "@/components/maplibre";
 import {storeToRefs} from "pinia";
 import {useGeoSpatialFile} from "@/lib/state";
+import Imagery from "@/components/maplibre/layers/Imagery.vue";
 
 const { geospatialFile } = storeToRefs(useGeoSpatialFile())
 
@@ -10,7 +11,7 @@ const { geospatialFile } = storeToRefs(useGeoSpatialFile())
 <template>
 <div class="min-w-full min-h-full flex flex-col">
   <MapView class="min-w-full h-100">
-    <OSMLayer />
+    <Imagery />
     <Suspense>
       <DeckLayer v-if="geospatialFile.endsWith('.shp')" />
     </Suspense>

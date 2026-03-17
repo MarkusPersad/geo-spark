@@ -14,7 +14,7 @@ const osmSource : SourceSpecification = {
   attribution: "&copy; OpenStreetMap Contributors",
   maxzoom: 19,
 }
-onMounted(async () => {
+onMounted( () => {
   if (maplibreProvider?.map) {
     maplibreProvider.map?.addSource('osm-tiles',osmSource )
     maplibreProvider.map.addLayer({
@@ -24,7 +24,7 @@ onMounted(async () => {
     })
   }
 })
-onUnmounted(async () =>{
+onUnmounted( () =>{
   if (maplibreProvider?.map){
     maplibreProvider.map.removeSource('osm-tiles')
     maplibreProvider.map.removeLayer('osm')

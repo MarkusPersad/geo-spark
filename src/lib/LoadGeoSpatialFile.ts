@@ -1,7 +1,7 @@
 import {
   Cesium3DTileset,
-  Color, CzmlDataSource,
-  GeoJsonDataSource, Resource,
+  Color, CzmlDataSource, GeoJsonDataSource,
+  Resource,
   Viewer,
 } from "cesium";
 import { convertFileSrc } from "@tauri-apps/api/core";
