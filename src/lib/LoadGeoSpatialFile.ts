@@ -1,9 +1,7 @@
 import {
   Cesium3DTileset,
-  Color,
-  CzmlDataSource,
-  GeoJsonDataSource,
-  Resource,
+  Color, CzmlDataSource,
+  GeoJsonDataSource, Resource,
   Viewer,
 } from "cesium";
 import { convertFileSrc } from "@tauri-apps/api/core";
@@ -11,7 +9,7 @@ import { platform } from "@tauri-apps/plugin-os";
 
 const osPlatform = platform();
 
-const getSchema = () => {
+export const getSchema = () => {
   switch (osPlatform) {
     case "windows":
     case "android":
@@ -29,7 +27,6 @@ export const LoadGeoJSON = async (file: string, viewer: Viewer) => {
     markerSymbol: "?",
   });
   await viewer.dataSources.add(dataSource);
-  await viewer.zoomTo(dataSource);
 };
 
 export const LoadTileJSON = async (file: string, viewer: Viewer) => {
@@ -52,6 +49,6 @@ export const LoadTileJSON = async (file: string, viewer: Viewer) => {
 export const LoadCzml = async (file: string, viewer: Viewer) => {
   viewer.clock.shouldAnimate = true
   const czmlDataSource = await CzmlDataSource.load(`${getSchema()}${file}`)
-  viewer.dataSources.add(czmlDataSource)
+  await viewer.dataSources.add(czmlDataSource)
   await viewer.zoomTo(czmlDataSource)
 };
