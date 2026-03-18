@@ -1,11 +1,12 @@
 import {
-  Cesium3DTileset,
-  Color, CzmlDataSource, GeoJsonDataSource,
-  Resource,
-  Viewer,
+    Cesium3DTileset, Color,
+    CzmlDataSource, GeoJsonDataSource,
+    Resource,
+    Viewer,
 } from "cesium";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { platform } from "@tauri-apps/plugin-os";
+import GeoJsonPrimitiveLayer from "@cesium-extends/primitive-geojson";
 
 const osPlatform = platform();
 
@@ -20,14 +21,28 @@ export const getSchema = () => {
 };
 
 export const LoadGeoJSON = async (file: string, viewer: Viewer) => {
-  const dataSource = await GeoJsonDataSource.load(convertFileSrc(file), {
-    stroke: Color.HOTPINK,
-    fill: Color.PINK,
-    strokeWidth: 3,
-    markerSymbol: "?",
-  });
-  await viewer.dataSources.add(dataSource);
-};
+    try {
+        const geojsonLayer = await GeoJsonPrimitiveLayer.load(convertFileSrc(file),{
+            stroke: Color.HOTPINK,
+            fill: Color.PINK,
+            strokeWidth: 3,
+            markerSymbol: "?",
+        })
+        viewer.scene.primitives.add(geojsonLayer.primitiveCollection)
+    } catch (err:any) {
+        try {
+            const datasource = await GeoJsonDataSource.load(convertFileSrc(file),{
+                stroke: Color.HOTPINK,
+                fill: Color.PINK,
+                strokeWidth: 3,
+                markerSymbol: "?",
+            })
+            viewer.dataSources.add(datasource)
+        } catch (err:any) {
+            throw  err
+        }
+    }
+}
 
 export const LoadTileJSON = async (file: string, viewer: Viewer) => {
   const tileset = viewer.scene.primitives.add(
