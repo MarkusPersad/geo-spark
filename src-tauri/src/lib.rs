@@ -1,6 +1,7 @@
 mod geo_spark;
 
 use crate::geo_spark::stream_file::get_stream_response;
+use crate::geo_spark::shapefile_to_geojson::convert;
 use detect_desktop_environment::DesktopEnvironment;
 use tauri::{
     Manager, State, WindowEvent,
@@ -85,7 +86,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             close_splashscreen,
             get_desktop_environment,
-            update_login_state
+            update_login_state,
+            convert
         ])
         .setup(|app| {
             let main_window = app.get_webview_window("main").unwrap();

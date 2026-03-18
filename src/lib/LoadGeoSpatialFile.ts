@@ -4,7 +4,7 @@ import {
     Resource,
     Viewer,
 } from "cesium";
-import { convertFileSrc } from "@tauri-apps/api/core";
+import {invoke} from "@tauri-apps/api/core";
 import { platform } from "@tauri-apps/plugin-os";
 import GeoJsonPrimitiveLayer from "@cesium-extends/primitive-geojson";
 
@@ -22,7 +22,7 @@ export const getSchema = () => {
 
 export const LoadGeoJSON = async (file: string, viewer: Viewer) => {
     try {
-        const geojsonLayer = await GeoJsonPrimitiveLayer.load(convertFileSrc(file),{
+        const geojsonLayer = await GeoJsonPrimitiveLayer.load(`${getSchema()}${file}`,{
             stroke: Color.HOTPINK,
             fill: Color.PINK,
             strokeWidth: 3,
@@ -31,7 +31,7 @@ export const LoadGeoJSON = async (file: string, viewer: Viewer) => {
         viewer.scene.primitives.add(geojsonLayer.primitiveCollection)
     } catch (err:any) {
         try {
-            const datasource = await GeoJsonDataSource.load(convertFileSrc(file),{
+            const datasource = await GeoJsonDataSource.load(`${getSchema()}${file}`,{
                 stroke: Color.HOTPINK,
                 fill: Color.PINK,
                 strokeWidth: 3,
@@ -67,3 +67,30 @@ export const LoadCzml = async (file: string, viewer: Viewer) => {
   await viewer.dataSources.add(czmlDataSource)
   await viewer.zoomTo(czmlDataSource)
 };
+//@ts-ignore
+export const LoadShapefile = async (file: string, viewer: Viewer) => {
+    try {
+        console.log(file)
+        await invoke("convert",{shpPath:file})
+        file = changeExtension(file, "geojson")
+        console.log(file)
+        await LoadGeoJSON(file,viewer)
+    } catch (err:any) {
+        throw  err
+    }
+}
+
+function changeExtension(filePath: string, newExt: string): string {
+    // 移除开头的点号（如果用户传了 ".js" 而不是 "js"）
+    const ext = newExt.startsWith('.') ? newExt.slice(1) : newExt;
+
+    // 找到最后一个点号的位置
+    const lastDotIndex = filePath.lastIndexOf('.');
+
+    // 处理特殊情况：没有扩展名、以点开头的隐藏文件、或只有扩展名（如 ".gitignore"）
+    if (lastDotIndex === -1 || lastDotIndex === 0 || filePath.lastIndexOf('/') > lastDotIndex) {
+        return `${filePath}.${ext}`;
+    }
+
+    return filePath.slice(0, lastDotIndex) + '.' + ext;
+}

@@ -26,8 +26,7 @@ import {Field} from "@/components/ui/field";
 import {open as openFile} from '@tauri-apps/plugin-dialog';
 import {toast} from "vue-sonner";
 import {CesiumProvider,cesiumProviderSymbol} from "@/components/cesium";
-import {LoadCzml, LoadGeoJSON, LoadTileJSON} from "@/lib";
-import {useRouter} from "vue-router";
+import {LoadCzml, LoadGeoJSON, LoadShapefile, LoadTileJSON} from "@/lib";
 
 const isDesktop = useMediaQuery('(min-width: 640px)')
 
@@ -44,7 +43,6 @@ const Modal = computed(() => ({
 
 const open = ref(false)
 
-const router = useRouter()
 
 const cesiumProvider = inject<CesiumProvider>(cesiumProviderSymbol)
 
@@ -88,7 +86,7 @@ const load = async () => {
         await LoadTileJSON(geospatialFile.value, cesiumProvider.viewer)
       }
       else if (geospatialFile.value.endsWith('shp')){
-        await router.push('/data')
+        await LoadShapefile(geospatialFile.value, cesiumProvider.viewer)
       }
       else if (geospatialFile.value.endsWith('czml')) {
         await LoadCzml(geospatialFile.value, cesiumProvider.viewer)
