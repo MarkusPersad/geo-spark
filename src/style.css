@@ -6,6 +6,20 @@
   prefix: "ds-";
 }
 
+@source "../../node_modules/@vuelor/picker";
+
+/* 2. Define the Vuelor Design System tokens */
+@theme {
+  --color-vuelor-primary: #0d99ff;
+  --color-vuelor-surface: #ffffff;
+  --color-vuelor-border: #e6e6e6;
+  --color-vuelor-input: #f5f5f5;
+
+  --shadow-vuelor-card: 0 2px 5px 0 #00000026, 0 10px 16px 0 #0000001f, 0 0 .5px 0 #0000001f;
+  --shadow-vuelor-thumb: 0px 0px .5px #0000002e, 0px 3px 8px #0000001a, 0px 1px 3px #0000001a;
+  --shadow-vuelor-inner: inset 0 0 0 1px #0000001a;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

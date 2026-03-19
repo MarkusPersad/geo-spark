@@ -30,6 +30,7 @@
     "@tauri-apps/plugin-store": "~2.4.2",
     "@turf/helpers": "^7.3.4",
     "@vee-validate/zod": "^4.15.1",
+    "@vuelor/picker": "^0.4.0",
     "@vueuse/core": "^14.2.1",
     "cesium": "^1.139.1",
     "class-variance-authority": "^0.7.1",

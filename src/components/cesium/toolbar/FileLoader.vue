@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {useMediaQuery} from "@vueuse/core";
-import {computed, inject, ref} from "vue";
+import {computed, inject, Ref, ref} from "vue";
 import {
   Dialog, DialogClose,
   DialogContent,
@@ -21,7 +21,7 @@ import {Button} from "@/components/ui/button";
 import {FoldersIcon} from "lucide-vue-next";
 import {Input} from "@/components/ui/input";
 import {storeToRefs} from "pinia";
-import {useGeoSpatialFile} from "@/lib/state";
+import { useSources} from "@/lib/state";
 import {Field} from "@/components/ui/field";
 import {open as openFile} from '@tauri-apps/plugin-dialog';
 import {toast} from "vue-sonner";
@@ -46,7 +46,8 @@ const open = ref(false)
 
 const cesiumProvider = inject<CesiumProvider>(cesiumProviderSymbol)
 
-const { geospatialFile } = storeToRefs(useGeoSpatialFile())
+const geospatialFile:Ref<string> = ref('')
+const {sources} = storeToRefs(useSources())
 
 const selectGeoSpatialFile = async () =>{
   try {
@@ -94,6 +95,7 @@ const load = async () => {
        else if (geospatialFile.value.endsWith('.geojson')|| geospatialFile.value.endsWith('.json')) {
         await LoadGeoJSON(geospatialFile.value, cesiumProvider.viewer)
       }
+      sources.value.files.unshift(geospatialFile.value)
     }
   } catch (err:any) {
     toast.error(err.message || String(err))
@@ -104,6 +106,7 @@ const reset = () =>{
     cesiumProvider.viewer.dataSources.removeAll()
     cesiumProvider.viewer.scene.primitives.removeAll()
     cesiumProvider.viewer.clock.shouldAnimate = false
+    sources.value.files = sources.value.files.filter(file => file !== geospatialFile.value)
     geospatialFile.value = ''
   }
 }

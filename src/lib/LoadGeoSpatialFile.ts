@@ -70,10 +70,8 @@ export const LoadCzml = async (file: string, viewer: Viewer) => {
 //@ts-ignore
 export const LoadShapefile = async (file: string, viewer: Viewer) => {
     try {
-        console.log(file)
         await invoke("convert",{shpPath:file})
         file = changeExtension(file, "geojson")
-        console.log(file)
         await LoadGeoJSON(file,viewer)
     } catch (err:any) {
         throw  err
