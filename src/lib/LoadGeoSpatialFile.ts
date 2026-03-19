@@ -21,11 +21,11 @@ export const getSchema = () => {
 };
 
 export const LoadGeoJSON = async (file: string, viewer: Viewer,color:string) => {
+    const baseColor = Color.fromCssColorString(color)
     try {
-        const baseColor = Color.fromCssColorString(color)
         const geojsonLayer = await GeoJsonPrimitiveLayer.load(`${getSchema()}${file}`,{
             stroke:baseColor,
-            fill: Color.fromAlpha(baseColor,0.8),
+            fill: Color.fromAlpha(baseColor,0.6),
             strokeWidth: 3,
             markerSymbol: "?",
         })
@@ -34,8 +34,8 @@ export const LoadGeoJSON = async (file: string, viewer: Viewer,color:string) => 
     } catch (err:any) {
         try {
             const datasource = await GeoJsonDataSource.load(`${getSchema()}${file}`,{
-                stroke: Color.HOTPINK,
-                fill: Color.PINK,
+                stroke: baseColor,
+                fill: Color.fromAlpha(baseColor,0.6),
                 strokeWidth: 3,
                 markerSymbol: "?",
             })
