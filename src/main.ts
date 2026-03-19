@@ -1,5 +1,6 @@
 import "@/style.css";
 import "vue-sonner/style.css";
+import "vue-color/style.css";
 import { createApp } from "vue";
 import App from "./App.vue";
 import { router } from "@/lib";

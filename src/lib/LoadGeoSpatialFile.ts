@@ -20,11 +20,12 @@ export const getSchema = () => {
   }
 };
 
-export const LoadGeoJSON = async (file: string, viewer: Viewer) => {
+export const LoadGeoJSON = async (file: string, viewer: Viewer,color:string) => {
     try {
+        const baseColor = Color.fromCssColorString(color)
         const geojsonLayer = await GeoJsonPrimitiveLayer.load(`${getSchema()}${file}`,{
-            stroke: Color.HOTPINK,
-            fill: Color.PINK,
+            stroke:baseColor,
+            fill: Color.fromAlpha(baseColor,0.8),
             strokeWidth: 3,
             markerSymbol: "?",
         })
@@ -69,11 +70,11 @@ export const LoadCzml = async (file: string, viewer: Viewer) => {
   return czmlDataSource
 };
 //@ts-ignore
-export const LoadShapefile = async (file: string, viewer: Viewer) => {
+export const LoadShapefile = async (file: string, viewer: Viewer,color:string) => {
     try {
         await invoke("convert",{shpPath:file})
         file = changeExtension(file, "geojson")
-        return  await LoadGeoJSON(file,viewer)
+        return  await LoadGeoJSON(file,viewer,color)
     } catch (err:any) {
         throw  err
     }

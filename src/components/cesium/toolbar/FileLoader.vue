@@ -26,6 +26,8 @@ import {open as openFile} from '@tauri-apps/plugin-dialog';
 import {toast} from "vue-sonner";
 import {CesiumProvider,cesiumProviderSymbol} from "@/components/cesium";
 import {LoadCzml, LoadGeoJSON, LoadShapefile, LoadTileJSON} from "@/lib";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import { SketchPicker } from 'vue-color';
 
 const isDesktop = useMediaQuery('(min-width: 640px)')
 
@@ -87,13 +89,13 @@ const load = async () => {
         source = await LoadTileJSON(geospatialFile.value, cesiumProvider.viewer)
       }
       else if (geospatialFile.value.endsWith('shp')){
-        source = await LoadShapefile(geospatialFile.value, cesiumProvider.viewer)
+        source = await LoadShapefile(geospatialFile.value, cesiumProvider.viewer,color.value)
       }
       else if (geospatialFile.value.endsWith('czml')) {
         source = await LoadCzml(geospatialFile.value, cesiumProvider.viewer)
       }
        else if (geospatialFile.value.endsWith('.geojson')|| geospatialFile.value.endsWith('.json')) {
-        source = await LoadGeoJSON(geospatialFile.value, cesiumProvider.viewer)
+        source = await LoadGeoJSON(geospatialFile.value, cesiumProvider.viewer,color.value)
       }
        addSource(geospatialFile.value, source)
     }
@@ -109,7 +111,15 @@ const reset = () =>{
     geospatialFile.value = ''
   }
 }
-
+const isColorPicker = computed(() => {
+  if (!geospatialFile.value.endsWith('tileset.json')){
+    return geospatialFile.value.endsWith('.geojson') ||
+        geospatialFile.value.endsWith('.json') ||
+        geospatialFile.value.endsWith('.shp')
+  }
+  return false
+})
+const color:Ref<string> = ref('#68CCCA')
 </script>
 
 <template>
@@ -135,7 +145,21 @@ const reset = () =>{
           </Field>
         </div>
       </div>
+
       <Component :is="Modal.Footer" class="pt-4">
+        <Popover>
+          <PopoverTrigger as-child>
+            <Button
+                v-show="isColorPicker"
+                variant="outline"
+                size="sm"
+                :style="{backgroundColor:color}"
+            ></Button>
+          </PopoverTrigger>
+          <PopoverContent>
+            <SketchPicker  v-model="color" />
+          </PopoverContent>
+        </Popover>
         <Button variant="outline" @click="reset">
           清除数据
         </Button>
