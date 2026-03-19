@@ -20,7 +20,6 @@ import {
 import {Button} from "@/components/ui/button";
 import {FoldersIcon} from "lucide-vue-next";
 import {Input} from "@/components/ui/input";
-import {storeToRefs} from "pinia";
 import { useSources} from "@/lib/state";
 import {Field} from "@/components/ui/field";
 import {open as openFile} from '@tauri-apps/plugin-dialog';
@@ -47,7 +46,7 @@ const open = ref(false)
 const cesiumProvider = inject<CesiumProvider>(cesiumProviderSymbol)
 
 const geospatialFile:Ref<string> = ref('')
-const {sources} = storeToRefs(useSources())
+const { addSource } = useSources()
 
 const selectGeoSpatialFile = async () =>{
   try {
@@ -83,19 +82,20 @@ const selectGeoSpatialFile = async () =>{
 const load = async () => {
   try {
     if (cesiumProvider?.viewer) {
+      let source :any
       if (geospatialFile.value.endsWith('tileset.json')){
-        await LoadTileJSON(geospatialFile.value, cesiumProvider.viewer)
+        source = await LoadTileJSON(geospatialFile.value, cesiumProvider.viewer)
       }
       else if (geospatialFile.value.endsWith('shp')){
-        await LoadShapefile(geospatialFile.value, cesiumProvider.viewer)
+        source = await LoadShapefile(geospatialFile.value, cesiumProvider.viewer)
       }
       else if (geospatialFile.value.endsWith('czml')) {
-        await LoadCzml(geospatialFile.value, cesiumProvider.viewer)
+        source = await LoadCzml(geospatialFile.value, cesiumProvider.viewer)
       }
        else if (geospatialFile.value.endsWith('.geojson')|| geospatialFile.value.endsWith('.json')) {
-        await LoadGeoJSON(geospatialFile.value, cesiumProvider.viewer)
+        source = await LoadGeoJSON(geospatialFile.value, cesiumProvider.viewer)
       }
-      sources.value.files.unshift(geospatialFile.value)
+       addSource(geospatialFile.value, source)
     }
   } catch (err:any) {
     toast.error(err.message || String(err))
@@ -106,7 +106,6 @@ const reset = () =>{
     cesiumProvider.viewer.dataSources.removeAll()
     cesiumProvider.viewer.scene.primitives.removeAll()
     cesiumProvider.viewer.clock.shouldAnimate = false
-    sources.value.files = sources.value.files.filter(file => file !== geospatialFile.value)
     geospatialFile.value = ''
   }
 }

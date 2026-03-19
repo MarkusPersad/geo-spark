@@ -29,6 +29,7 @@ export const LoadGeoJSON = async (file: string, viewer: Viewer) => {
             markerSymbol: "?",
         })
         viewer.scene.primitives.add(geojsonLayer.primitiveCollection)
+        return geojsonLayer
     } catch (err:any) {
         try {
             const datasource = await GeoJsonDataSource.load(`${getSchema()}${file}`,{
@@ -38,6 +39,7 @@ export const LoadGeoJSON = async (file: string, viewer: Viewer) => {
                 markerSymbol: "?",
             })
             viewer.dataSources.add(datasource)
+            return datasource
         } catch (err:any) {
             throw  err
         }
@@ -45,34 +47,33 @@ export const LoadGeoJSON = async (file: string, viewer: Viewer) => {
 }
 
 export const LoadTileJSON = async (file: string, viewer: Viewer) => {
-  const tileset = viewer.scene.primitives.add(
-    await Cesium3DTileset.fromUrl(
-      new Resource({
-        url: `${getSchema()}${file}`,
-      }),
-      {
-        dynamicScreenSpaceError: true,
-        dynamicScreenSpaceErrorDensity: 2.0e-4,
-        dynamicScreenSpaceErrorFactor: 24.0,
-        dynamicScreenSpaceErrorHeightFalloff: 0.25,
-      },
-    ),
-  );
-  await viewer.zoomTo(tileset);
+   const tileset = await Cesium3DTileset.fromUrl(
+       new Resource({
+           url: `${getSchema()}${file}`,
+       }),
+       {
+           dynamicScreenSpaceError: true,
+           dynamicScreenSpaceErrorDensity: 2.0e-4,
+           dynamicScreenSpaceErrorFactor: 24.0,
+           dynamicScreenSpaceErrorHeightFalloff: 0.25,
+       },
+   )
+    viewer.scene.primitives.add(tileset)
+    return tileset
 };
 
 export const LoadCzml = async (file: string, viewer: Viewer) => {
   viewer.clock.shouldAnimate = true
   const czmlDataSource = await CzmlDataSource.load(`${getSchema()}${file}`)
   await viewer.dataSources.add(czmlDataSource)
-  await viewer.zoomTo(czmlDataSource)
+  return czmlDataSource
 };
 //@ts-ignore
 export const LoadShapefile = async (file: string, viewer: Viewer) => {
     try {
         await invoke("convert",{shpPath:file})
         file = changeExtension(file, "geojson")
-        await LoadGeoJSON(file,viewer)
+        return  await LoadGeoJSON(file,viewer)
     } catch (err:any) {
         throw  err
     }
