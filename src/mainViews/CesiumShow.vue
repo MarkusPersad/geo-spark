@@ -4,7 +4,7 @@ import {FloatingButton} from "@/components/data";
 import {useTemplateRef} from "vue";
 import {onBeforeRouteUpdate} from "vue-router";
 import {useSources} from "@/lib/state";
-import {Cartesian3, CzmlDataSource, GeoJsonDataSource} from "cesium";
+import {Cartesian3, Cesium3DTileset, CzmlDataSource, GeoJsonDataSource} from "cesium";
 import GeoJsonPrimitiveLayer from "@cesium-extends/primitive-geojson";
 import { bboxPolygon,center } from '@turf/turf';
 import {toast} from "vue-sonner";
@@ -47,6 +47,8 @@ onBeforeRouteUpdate((to)=>{
           if (cv.value.cesiumProvider.viewer){
             cv.value.cesiumProvider.viewer.clock.shouldAnimate = false
           }
+        } else if (source instanceof Cesium3DTileset){
+          cv.value.cesiumProvider.viewer?.scene.primitives.remove(source)
         }
         removeSource(key)
       }

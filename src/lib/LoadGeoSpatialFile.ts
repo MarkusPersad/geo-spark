@@ -39,7 +39,7 @@ export const LoadGeoJSON = async (file: string, viewer: Viewer,color:string) => 
                 strokeWidth: 3,
                 markerSymbol: "?",
             })
-            viewer.dataSources.add(datasource)
+            await viewer.dataSources.add(datasource)
             return datasource
         } catch (err:any) {
             throw  err
@@ -53,10 +53,37 @@ export const LoadTileJSON = async (file: string, viewer: Viewer) => {
            url: `${getSchema()}${file}`,
        }),
        {
+           progressiveResolutionHeightFraction: 0.5,  // 先加载 50% 分辨率的瓦片
+           preferLeaves: false,                       // 先粗后细，避免空洞
+
+           // 2. 动态误差控制 - 远处降低精度
            dynamicScreenSpaceError: true,
-           dynamicScreenSpaceErrorDensity: 2.0e-4,
-           dynamicScreenSpaceErrorFactor: 24.0,
-           dynamicScreenSpaceErrorHeightFalloff: 0.25,
+           dynamicScreenSpaceErrorDensity: 0.002,     // 更高密度 = 更远距离开始降质
+           dynamicScreenSpaceErrorFactor: 16.0,       // 降低远处精度强度
+           dynamicScreenSpaceErrorHeightFalloff: 0.1, // 低空时完全精细，高空允许降质
+
+           // 3. 内存保守策略
+           maximumScreenSpaceError: 32,               // 放宽误差，减少瓦片数量
+           cacheBytes: 1024 * 1024 * 1024,             // 512MB -> 256MB，强制快速回收
+           maximumCacheOverflowBytes: 512 * 1024 * 1024, // 限制峰值内存
+
+           // 4. 移动时 aggressive culling
+           cullRequestsWhileMoving: true,
+           cullRequestsWhileMovingMultiplier: 120.0,  // 更激进的剔除，快速移动不加载
+
+           // 5. 注视点优化（关键抗卡顿）
+           foveatedScreenSpaceError: true,
+           foveatedConeSize: 0.2,                     // 中心 20% 区域高清
+           foveatedMinimumScreenSpaceErrorRelaxation: 4.0, // 边缘放宽 4 倍误差
+           foveatedTimeDelay: 0.5,                    // 停止 0.5s 后才加载边缘，避免拖拽时卡顿
+
+           // 6. 跳级加载（大数据集必备）
+           skipLevelOfDetail: true,
+           skipScreenSpaceErrorFactor: 8,             // 跳级阈值
+           skipLevels: 2,                             // 一次跳 2 级，减少请求数
+           baseScreenSpaceError: 512,                 // 起始跳级误差
+           immediatelyLoadDesiredLevelOfDetail: false, // 允许中间层级过渡
+           loadSiblings: false                        // 不加载兄弟节点，减少 30% 请求
        },
    )
     viewer.scene.primitives.add(tileset)
