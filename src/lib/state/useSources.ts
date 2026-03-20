@@ -1,29 +1,38 @@
 import {defineStore} from "pinia";
-import {computed, ref, Ref} from "vue";
+import {computed, markRaw, ref, Ref} from "vue";
 
 export const useSources = defineStore('sources', ()=>{
-    const sources:Ref<Map<string, any>> = ref(new Map())
+    const sources:Map<string, any> = markRaw(new Map())
+    const updateCount:Ref<number> = ref(0)
     const addSource = (id:string, source:any)=>{
-        sources.value.set(id, source)
+      sources.set(id, source)
+        updateCount.value++
     }
     const removeSource = (id:string)=>{
-        sources.value.delete(id)
+        sources.delete(id)
+        updateCount.value++
     }
     const getSource = (id:string)=>{
-        return sources.value.get(id)
+        return sources.get(id)
     }
     const clearSources = ()=>{
-        sources.value.clear()
+        sources.clear()
+        updateCount.value++
     }
     const sourceList = computed(()=>{
-        return Array.from(sources.value.values())
+        updateCount.value
+        return Array.from(sources.values())
+    })
+    const getKeys = computed(()=>{
+        updateCount.value
+        return Array.from(sources.keys())
     })
     return {
-        sources,
         addSource,
         removeSource,
         getSource,
         clearSources,
-        sourceList
+        sourceList,
+        getKeys
     }
 })

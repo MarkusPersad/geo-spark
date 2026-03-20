@@ -94,3 +94,22 @@ function changeExtension(filePath: string, newExt: string): string {
 
     return filePath.slice(0, lastDotIndex) + '.' + ext;
 }
+/**
+ * 从文件路径中提取文件名（可选择是否保留扩展名）
+ * @param path 完整文件路径（如 "/user/doc/test.txt"、"C:\files\demo.png"）
+ * @param keepExt 是否保留扩展名（默认 true）
+ * @returns 提取的文件名
+ */
+export function getFileNameFromPath(path: string, keepExt: boolean = true): string {
+    // 第一步：统一替换路径分隔符（兼容 Windows \ 和 Linux/macOS /）
+    const normalizedPath = path.replace(/\\/g, '/');
+    // 第二步：分割路径，取最后一段（文件名部分）
+    const fullFileName = normalizedPath.split('/').pop() || '';
+
+    if (!keepExt) {
+        // 去掉扩展名（处理多后缀如 .tar.gz 的情况，只保留第一个 . 前的部分）
+        return fullFileName.split('.').slice(0, -1).join('.') || fullFileName;
+    }
+
+    return fullFileName;
+}

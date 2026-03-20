@@ -1,7 +1,16 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import {LucideIcon} from "lucide-vue-next";
-import {SidebarMenu, SidebarMenuButton, SidebarMenuItem} from "@/components/ui/sidebar";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub, SidebarMenuSubButton,
+  SidebarMenuSubItem
+} from "@/components/ui/sidebar";
+import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/ui/collapsible";
+import {Button} from "@/components/ui/button";
+import {XIcon} from 'lucide-vue-next';
 
 const route = useRoute()
 
@@ -10,6 +19,9 @@ defineProps<{
     title:string,
     url:string,
     icon:LucideIcon,
+    items?:{
+      key:string,
+    }[]
   }[]
 }>()
 
@@ -19,14 +31,34 @@ const isActive = (path:string) => route.path === path
 
 <template>
   <SidebarMenu>
-    <SidebarMenuItem v-for="item in items" :key="item.title">
-      <SidebarMenuButton  as-child :is-active="isActive(item.url)" :class="{active:isActive(item.url)}">
-        <RouterLink :to="item.url">
-          <component :is="item.icon" />
-          <span class="ml-2">{{ item.title }}</span>
-        </RouterLink>
-      </SidebarMenuButton>
-    </SidebarMenuItem>
+    <Collapsible v-for="item in items" :key="item.title" as-child :default-open="isActive(item.url)" class="group/collasible">
+      <SidebarMenuItem>
+        <CollapsibleTrigger as-child>
+          <SidebarMenuButton  as-child :is-active="isActive(item.url)" :class="{active:isActive(item.url)}">
+            <RouterLink :to="item.url">
+              <component :is="item.icon" />
+              <span class="ml-2">{{ item.title }}</span>
+            </RouterLink>
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarMenuSub v-show="item.items?.length">
+            <SidebarMenuSubItem v-for="sub in item.items" :key="sub.key" class="flex text-center">
+              <SidebarMenuSubButton as-child class="grow">
+                <RouterLink :to="`${item.url}/${sub.key}`">
+                  <span class="ml-2">{{sub.key}}</span>
+                </RouterLink>
+              </SidebarMenuSubButton>
+              <Button variant="outline" size="icon-sm">
+                <RouterLink :to="`${item.url}/${sub.key}/true`">
+                  <XIcon />
+                </RouterLink>
+              </Button>
+            </SidebarMenuSubItem>
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </SidebarMenuItem>
+    </Collapsible>
   </SidebarMenu>
 </template>
 

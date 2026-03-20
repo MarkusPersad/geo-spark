@@ -25,7 +25,7 @@ import {Field} from "@/components/ui/field";
 import {open as openFile} from '@tauri-apps/plugin-dialog';
 import {toast} from "vue-sonner";
 import {CesiumProvider,cesiumProviderSymbol} from "@/components/cesium";
-import {LoadCzml, LoadGeoJSON, LoadShapefile, LoadTileJSON} from "@/lib";
+import {LoadCzml, LoadGeoJSON, LoadShapefile, LoadTileJSON,getFileNameFromPath} from "@/lib";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import { SketchPicker } from 'vue-color';
 
@@ -97,7 +97,9 @@ const load = async () => {
        else if (geospatialFile.value.endsWith('.geojson')|| geospatialFile.value.endsWith('.json')) {
         source = await LoadGeoJSON(geospatialFile.value, cesiumProvider.viewer,color.value)
       }
-       addSource(geospatialFile.value, source)
+       if (geospatialFile.value){
+         addSource(getFileNameFromPath(geospatialFile.value,false), source)
+       }
     }
   } catch (err:any) {
     toast.error(err.message || String(err))
@@ -105,9 +107,6 @@ const load = async () => {
 }
 const reset = () =>{
   if (cesiumProvider?.viewer){
-    cesiumProvider.viewer.dataSources.removeAll()
-    cesiumProvider.viewer.scene.primitives.removeAll()
-    cesiumProvider.viewer.clock.shouldAnimate = false
     geospatialFile.value = ''
   }
 }

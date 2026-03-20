@@ -24,7 +24,7 @@ export const router = () =>{
                             redirect: '/map'
                         },
                         {
-                            path: '/map',
+                            path: '/map/:key?/:delete?',
                             component: () => import('@/mainViews/CesiumShow.vue')
                         },
                         {
@@ -38,7 +38,7 @@ export const router = () =>{
         router.afterEach(async (to) =>{
             console.log(to.path)
             if (to.path !== '/login'){
-                invoke('update_login_state',{value: true})
+                await invoke('update_login_state',{value: true})
             }
         })
         router.isReady().then(async () =>{

@@ -17,6 +17,7 @@ export const InitViewer = (ref:Readonly<ShallowRef<HTMLDivElement|null>>,provide
             baseLayer: false,
             timeline: false,
             sceneMode: SceneMode.SCENE3D,
+            selectionIndicator: false,
             infoBox: false,
             projectionPicker: false,
             vrButton: false,

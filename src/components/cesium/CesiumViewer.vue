@@ -23,6 +23,10 @@ onUnmounted(() => {
     cesiumProvider.viewer?.destroy()
   }
 })
+defineExpose({
+  cesiumProvider:cesiumProvider,
+})
+
 </script>
 <template>
   <div ref="viewer" class="min-w-full min-h-full relative">
