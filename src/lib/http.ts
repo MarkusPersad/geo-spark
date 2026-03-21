@@ -1,128 +1,143 @@
-import {ClientOptions, fetch} from '@tauri-apps/plugin-http'
-import {AppStore} from "@/lib/state/store.ts";
-import { BaseURL,API } from '@/assets/default.json'
+import { AppStore } from "@/lib/state";
+import { BaseURL, API } from '@/assets/default.json';
+import { fetch, ClientOptions } from '@tauri-apps/plugin-http';
 
-const ACCESS_STATUS = "Access-Status"
 const REFRESH_HEADER = "X-Refresh"
 const ACCESS_HEADER = "Authorization"
-export class Http{
-    private static headers:Record<string, string> = {
+const ACCESS_STATUS = "Access-Status"
+
+export class RefreshQueue {
+    private refreshPromise: Promise<void> | null = null;
+    private lastRefreshTime: number = 0;
+    // 刷新有效时间：15分钟
+    private readonly REFRESH_VALIDITY = 5 * 60 * 1000;
+
+    async executeRefresh(refreshFn: () => Promise<void>, force: boolean = false): Promise<void> {
+        // 非强制模式下，检查是否在有效时间内
+        if (!force && this.isRefreshValid()) {
+            return this.refreshPromise || Promise.resolve();
+        }
+
+        // 如果已有刷新在进行中，复用该 Promise（避免重复请求）
+        if (this.refreshPromise) {
+            return this.refreshPromise;
+        }
+
+        // 执行刷新
+        this.refreshPromise = refreshFn()
+            .then(() => {
+                this.lastRefreshTime = Date.now();
+            })
+            .catch((err) => {
+                // 失败时重置时间戳，允许立即重试
+                this.lastRefreshTime = 0;
+                throw err;
+            })
+            .finally(() => {
+                this.refreshPromise = null;
+            });
+
+        return this.refreshPromise;
+    }
+
+    isRefreshValid(): boolean {
+        return Date.now() - this.lastRefreshTime < this.REFRESH_VALIDITY;
+    }
+}
+
+export class Http {
+    private static headers: Record<string, string> = {
         'Content-Type': 'application/json'
     }
-    private static isRefreshing:boolean = false
-    public static setHeaders(headers:Record<string, string>){
-        Http.headers = {...Http.headers, ...headers}
-    }
-    public static deleteHeaders(...keys:string[]){
-        keys.forEach(key => {
-            delete Http.headers[key]
-        })
+    private static refreshQueue = new RefreshQueue();
+
+    public static setHeaders(headers: Record<string, string>) {
+        Http.headers = { ...Http.headers, ...headers }
     }
 
-    public static getHeaders(){
-        return Http.headers
+    public static deleteHeaders(...keys: string[]) {
+        keys.forEach(key => delete Http.headers[key])
     }
 
-        /**
-     * 发起HTTP请求并处理认证相关的自动刷新逻辑
-     * @param input - 请求的目标URL，可以是字符串、URL对象或Request对象
-     * @param init - 可选的请求初始化配置，包含RequestInit和ClientOptions的属性
-     * @returns Promise<Response> 返回请求的响应对象
-     */
+    public static getHeaders(): Record<string, string> {
+        return { ...Http.headers }
+    }
+
     public static async useFetch(
         input: URL | Request | string,
-        init?: RequestInit & ClientOptions,
-    ): Promise<Response>{
-        try {
-            // 发起HTTP请求，合并传入的配置和全局请求头
-            let res = await fetch(input,{
+        init?: RequestInit & ClientOptions
+    ): Promise<Response> {
+        let response = await fetch(input, {
+            ...init,
+            headers: Http.getHeaders(),
+        })
+
+        // 需要刷新 token
+        if (response.headers.get(ACCESS_STATUS)) {
+            await Http.refreshToken();
+            // 使用新 token 重试
+            response = await fetch(input, {
                 ...init,
-                headers: Http.getHeaders()
+                headers: Http.getHeaders(),
+            })
+        }
+
+        if (!response.ok) {
+            throw new Error(`RequestError: ${response.status}`)
+        }
+
+        // 保存服务端返回的新 token
+        const newRefresh = response.headers.get(REFRESH_HEADER)
+        if (newRefresh) {
+            await AppStore.SetValue(REFRESH_HEADER, newRefresh)
+        }
+
+        const newAccess = response.headers.get(ACCESS_HEADER)
+        if (newAccess) {
+            Http.setHeaders({ [ACCESS_HEADER]: `Bearer ${newAccess}` })
+        }
+
+        if (newRefresh || newAccess) {
+            await AppStore.Save()
+        }
+
+        return response
+    }
+
+    public static async refreshToken(force: boolean = false): Promise<void> {
+        return Http.refreshQueue.executeRefresh(async () => {
+            const refreshToken = await AppStore.GetValue<string>(REFRESH_HEADER)
+            if (!refreshToken) {
+                throw new Error('No refresh token')
+            }
+
+            Http.setHeaders({ [REFRESH_HEADER]: refreshToken })
+
+            const url = `${BaseURL}${API.Refresh}`
+            const res = await fetch(url, {
+                method: 'GET',
+                headers: Http.getHeaders(),
             })
 
-            // 检查响应是否成功
-            if (!res.ok){
-                throw new Error('请求失败')
+            if (!res.ok) {
+                throw new Error(`Refresh failed: ${res.status}`)
             }
 
-            // 检查是否需要刷新访问令牌
-            if (res.headers.has(ACCESS_STATUS)){
-                if (res.headers.get(ACCESS_STATUS)){
-                    // 执行令牌刷新并重新发起请求
-                    await Http.refreshToken()
-                    return await Http.useFetch(input,init)
-                }
+            const newRefresh = res.headers.get(REFRESH_HEADER)
+            const newAccess = res.headers.get(ACCESS_HEADER)
+
+            if (!newRefresh || !newAccess) {
+                throw new Error('Incomplete token response')
             }
-            if (res.headers.has(ACCESS_HEADER)){
-                Http.setHeaders({
-                    [ACCESS_HEADER]: `Bearer ${res.headers.get(ACCESS_HEADER)!}`
-                })
-            }
-            if (res.headers.has(REFRESH_HEADER)){
-                await AppStore.SetValue(REFRESH_HEADER, res.headers.get(REFRESH_HEADER)!)
-                await AppStore.Save()
-            }
-            return res
-        } catch (err:any) {
-            throw new Error(err.message||String(err))
-        }
+
+            await AppStore.SetValue(REFRESH_HEADER, newRefresh)
+            Http.setHeaders({ [ACCESS_HEADER]: `Bearer ${newAccess}` })
+            await AppStore.Save()
+            Http.deleteHeaders(REFRESH_HEADER)
+        }, force)
     }
 
-
-        /**
-     * 刷新访问令牌
-     * 该函数用于在访问令牌过期时自动刷新令牌，确保用户会话的连续性
-     * @returns Promise<void> 无返回值的异步函数
-     */
-    public static async refreshToken(){
-        // 检查是否正在刷新中，避免重复刷新
-        if (Http.isRefreshing){
-            return
-        }
-        Http.isRefreshing = true
-
-        // 获取存储的刷新令牌
-        let refreshToken = await AppStore.GetValue<string>(REFRESH_HEADER)
-        if (!refreshToken){
-             throw new Error('刷新令牌异常')
-        }
-
-        // 设置请求头包含刷新令牌
-        Http.setHeaders({
-            [REFRESH_HEADER]: refreshToken
-        })
-
-        // 向服务器发送刷新令牌请求
-        let url = `${BaseURL}${API.Refresh}`
-        let refreshRes = await fetch(url,{
-            method: 'GET',
-            headers: Http.getHeaders()
-        })
-        if (!refreshRes.ok){
-            throw new Error('刷新令牌失败')
-        }
-        console.log(refreshRes)
-
-        // 处理服务器返回的新刷新令牌
-        let newRefreshToken = refreshRes.headers.get(REFRESH_HEADER)
-        if (!newRefreshToken){
-            throw new Error('从响应头获取刷新令牌异常')
-        }
-        await AppStore.SetValue(REFRESH_HEADER, newRefreshToken)
-
-        // 处理服务器返回的新访问令牌
-        let accessToken = refreshRes.headers.get(ACCESS_HEADER)
-        if (!accessToken){
-            throw new Error('从响应头获取访问令牌异常')
-        }
-        Http.setHeaders({
-            [ACCESS_HEADER]: `Bearer ${accessToken}`
-        })
-        await AppStore.Save()
-
-        // 清理临时使用的刷新令牌头并重置刷新状态
-        Http.deleteHeaders(REFRESH_HEADER)
-        Http.isRefreshing = false
+    public static isRefreshValid(): boolean {
+        return Http.refreshQueue.isRefreshValid()
     }
-
 }
