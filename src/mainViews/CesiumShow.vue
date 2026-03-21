@@ -8,12 +8,14 @@ import {Cartesian3, Cesium3DTileset, CzmlDataSource, GeoJsonDataSource} from "ce
 import GeoJsonPrimitiveLayer from "@cesium-extends/primitive-geojson";
 import { bboxPolygon,center } from '@turf/turf';
 import {toast} from "vue-sonner";
+import {storeToRefs} from "pinia";
 
 defineOptions({
   name: "CesiumShow"
 })
 const cv = useTemplateRef("cv")
 const {getSource,removeSource} = useSources()
+const {sourceList} = storeToRefs(useSources())
 
 onBeforeRouteUpdate((to)=>{
   const key = to.params.key as string
@@ -44,9 +46,9 @@ onBeforeRouteUpdate((to)=>{
           source.primitiveCollection.removeAll()
         } else if (source instanceof CzmlDataSource){
           cv.value.cesiumProvider.viewer?.dataSources.remove(source)
-          if (cv.value.cesiumProvider.viewer){
-            cv.value.cesiumProvider.viewer.clock.shouldAnimate = false
-          }
+          cv.value!.cesiumProvider.viewer &&
+          (cv.value!.cesiumProvider.viewer.clock.shouldAnimate =
+              sourceList.value.some(item => item instanceof CzmlDataSource))
         } else if (source instanceof Cesium3DTileset){
           cv.value.cesiumProvider.viewer?.scene.primitives.remove(source)
         }
