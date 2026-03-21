@@ -133,6 +133,9 @@ const color:Ref<string> = ref('#68CCCA')
         <Component :is="Modal.Title">
           GeoSpatial Data Loader
         </Component>
+        <Component :is="Modal.Description">
+          请选择需要加载的GeoSpatial文件
+        </Component>
       </Component>
       <div class="flex items-center gap-2">
         <div class="grid flex-1 gap-2">

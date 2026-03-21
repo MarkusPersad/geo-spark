@@ -64,6 +64,9 @@ const imageryComponent = computed(() => {
         <Component :is="Modal.Title">
           Imagery
         </Component>
+        <Component :is="Modal.Description">
+          底图选择
+        </Component>
       </Component>
       <div class="flex items-center gap-2">
         <div class="grid flex-1 gap-2">
