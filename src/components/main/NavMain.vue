@@ -11,6 +11,8 @@ import {
 import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/ui/collapsible";
 import {Button} from "@/components/ui/button";
 import {XIcon} from 'lucide-vue-next';
+import {Separator} from "@/components/ui/separator";
+import {ScrollArea} from "@/components/ui/scroll-area";
 
 const route = useRoute()
 
@@ -43,18 +45,21 @@ const isActive = (path:string) => route.path === path
         </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarMenuSub v-show="item.items?.length">
-            <SidebarMenuSubItem v-for="sub in item.items" :key="sub.key" class="flex text-center">
-              <SidebarMenuSubButton as-child class="grow">
-                <RouterLink :to="`${item.url}/${sub.key}`">
-                  <span class="ml-2">{{sub.key}}</span>
-                </RouterLink>
-              </SidebarMenuSubButton>
-              <Button variant="outline" size="icon-sm">
-                <RouterLink :to="`${item.url}/${sub.key}/true`">
-                  <XIcon />
-                </RouterLink>
-              </Button>
-            </SidebarMenuSubItem>
+            <ScrollArea class="rounded-md border">
+              <SidebarMenuSubItem v-for="sub in item.items" :key="sub.key" class="flex text-center">
+                <SidebarMenuSubButton as-child class="grow">
+                  <RouterLink :to="`${item.url}/${sub.key}`">
+                    <span class="ml-2">{{sub.key}}</span>
+                  </RouterLink>
+                </SidebarMenuSubButton>
+                <Button variant="outline" size="icon-sm">
+                  <RouterLink :to="`${item.url}/${sub.key}/true`">
+                    <XIcon />
+                  </RouterLink>
+                </Button>
+                <Separator class="mx-2" />
+              </SidebarMenuSubItem>
+            </ScrollArea>
           </SidebarMenuSub>
         </CollapsibleContent>
       </SidebarMenuItem>
