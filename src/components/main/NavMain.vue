@@ -13,6 +13,7 @@ import {Button} from "@/components/ui/button";
 import {XIcon} from 'lucide-vue-next';
 import {Separator} from "@/components/ui/separator";
 import {ScrollArea} from "@/components/ui/scroll-area";
+import {Label} from "@/components/ui/label";
 
 const route = useRoute()
 
@@ -45,19 +46,21 @@ const isActive = (path:string) => route.path === path
         </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarMenuSub v-show="item.items?.length">
-            <ScrollArea class="rounded-md border">
-              <SidebarMenuSubItem v-for="sub in item.items" :key="sub.key" class="flex text-center">
-                <SidebarMenuSubButton as-child class="grow">
-                  <RouterLink :to="`${item.url}/${sub.key}`">
-                    <span class="ml-2">{{sub.key}}</span>
-                  </RouterLink>
-                </SidebarMenuSubButton>
-                <Button variant="outline" size="icon-sm">
-                  <RouterLink :to="`${item.url}/${sub.key}/true`">
-                    <XIcon />
-                  </RouterLink>
-                </Button>
-                <Separator class="mx-2" />
+            <ScrollArea class="max-h-72 rounded-md border">
+              <SidebarMenuSubItem v-for="sub in item.items" :key="sub.key">
+                <template class="flex items-center justify-between w-full">
+                  <SidebarMenuSubButton as-child class="grow justify-start min-w-0">
+                    <RouterLink :to="`${item.url}/${sub.key}`">
+                      <Label class="ml-2 font-normal truncate text-left w-full">{{sub.key}}</Label>
+                    </RouterLink>
+                  </SidebarMenuSubButton>
+                  <Button variant="outline" size="icon-sm" class="shrink-0 h-8 w-8">
+                    <RouterLink :to="`${item.url}/${sub.key}/true`">
+                      <XIcon />
+                    </RouterLink>
+                  </Button>
+                </template>
+                <Separator />
               </SidebarMenuSubItem>
             </ScrollArea>
           </SidebarMenuSub>
