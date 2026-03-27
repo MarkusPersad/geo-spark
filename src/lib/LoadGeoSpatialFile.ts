@@ -1,11 +1,13 @@
 import {
-    Cesium3DTileset, Color,
-    CzmlDataSource, GeoJsonDataSource,
+    Cesium3DTileset,
+    Color,
+    CzmlDataSource,
+    GeoJsonDataSource,
     Resource,
     Viewer,
 } from "cesium";
 import {invoke} from "@tauri-apps/api/core";
-import { platform } from "@tauri-apps/plugin-os";
+import {platform} from "@tauri-apps/plugin-os";
 import GeoJsonPrimitiveLayer from "@cesium-extends/primitive-geojson";
 
 const osPlatform = platform();
@@ -48,7 +50,7 @@ export const LoadGeoJSON = async (file: string, viewer: Viewer,color:string) => 
 }
 
 export const LoadTileJSON = async (file: string, viewer: Viewer) => {
-   const tileset = await Cesium3DTileset.fromUrl(
+    const tileset = await Cesium3DTileset.fromUrl(
        new Resource({
            url: `${getSchema()}${file}`,
        }),

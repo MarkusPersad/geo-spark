@@ -63,7 +63,9 @@ onBeforeRouteUpdate((to)=>{
   <CesiumViewer ref="cv">
     <FloatingButton>
       <template v-slot:up>
-        <TerrainToggle />
+        <Suspense>
+          <TerrainToggle />
+        </Suspense>
         <GeoCoder />
       </template>
       <template v-slot:left>

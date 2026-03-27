@@ -5,7 +5,7 @@ import {UrlTemplateImageryProvider} from "cesium";
 
 const cesiumProvider = inject<CesiumProvider>(cesiumProviderSymbol)
 const osmMap = new UrlTemplateImageryProvider({
-  url: "https://tile-{s}.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+  url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
   subdomains: ["a", "b", "c","d"],
 })
 onMounted(() => {
