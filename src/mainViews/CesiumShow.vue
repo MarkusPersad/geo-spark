@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {BaseLayerSwitch, CesiumViewer, FileLoader, GeoCoder, TerrainToggle, Zoom} from "@/components/cesium";
+import {BaseLayerSwitch, CesiumViewer, FileLoader, GeoCoder, TerrainToggle, Zoom,Popup} from "@/components/cesium";
 import {FloatingButton} from "@/components/data";
 import {useTemplateRef} from "vue";
 import {onBeforeRouteUpdate} from "vue-router";
@@ -74,5 +74,6 @@ onBeforeRouteUpdate((to)=>{
       </template>
     </FloatingButton>
     <Zoom />
+    <Popup />
   </CesiumViewer>
 </template>
