@@ -15,7 +15,7 @@
     "@deck.gl/layers": "^9.2.11",
     "@deck.gl/mapbox": "^9.2.11",
     "@loaders.gl/json": "^4.3.4",
-    "@tabler/icons-vue": "^3.41.0",
+    "@tabler/icons-vue": "^3.41.1",
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/vue-table": "^8.21.3",
     "@tauri-apps/api": "^2.10.1",

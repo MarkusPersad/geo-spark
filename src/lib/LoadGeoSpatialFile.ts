@@ -93,7 +93,6 @@ export const LoadTileJSON = async (file: string, viewer: Viewer) => {
 };
 
 export const LoadCzml = async (file: string, viewer: Viewer) => {
-  viewer.clock.shouldAnimate = true
   const czmlDataSource = await CzmlDataSource.load(`${getSchema()}${file}`)
   await viewer.dataSources.add(czmlDataSource)
   return czmlDataSource
