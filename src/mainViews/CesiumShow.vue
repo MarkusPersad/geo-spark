@@ -84,6 +84,6 @@ onBeforeRouteUpdate((to)=>{
       </template>
     </FloatingButton>
     <Zoom />
-    <Popup />
+    <Popup v-if="sourceList.length > 0" />
   </CesiumViewer>
 </template>

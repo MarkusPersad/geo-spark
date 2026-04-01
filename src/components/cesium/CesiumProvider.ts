@@ -11,6 +11,7 @@ export const InitViewer = (ref:Readonly<ShallowRef<HTMLDivElement|null>>,provide
         provider.viewer = new Viewer(ref.value!,{
             homeButton: false,
             geocoder: false,
+            automaticallyTrackDataSourceClocks: false,
             animation: false,
             sceneModePicker: false,
             baseLayerPicker: false,
