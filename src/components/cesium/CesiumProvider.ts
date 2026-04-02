@@ -1,5 +1,5 @@
-import {Camera, Rectangle, SceneMode, Viewer} from "cesium";
-import {InjectionKey, Ref, ShallowRef} from "vue";
+import { Camera, Rectangle, SceneMode, Viewer } from "cesium";
+import { InjectionKey, Ref, ShallowRef } from "vue";
 
 export interface CesiumProvider {
   viewer: Viewer | null
@@ -10,6 +10,7 @@ export const InitViewer = (ref: Readonly<ShallowRef<HTMLDivElement | null>>, pro
   if (ref.value) {
     provider.viewer = new Viewer(ref.value!, {
       homeButton: false,
+      automaticallyTrackDataSourceClocks: false,
       geocoder: false,
       animation: false,
       sceneModePicker: false,
