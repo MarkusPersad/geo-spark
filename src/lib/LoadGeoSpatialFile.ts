@@ -30,6 +30,7 @@ export const LoadGeoJSON = async (file: string, viewer: Viewer, color: string) =
       fill: Color.fromAlpha(baseColor, 0.6),
       strokeWidth: 3,
       markerSymbol: "?",
+      clampToGround: true
     })
     viewer.scene.primitives.add(geojsonLayer.primitiveCollection)
     return geojsonLayer
@@ -40,6 +41,7 @@ export const LoadGeoJSON = async (file: string, viewer: Viewer, color: string) =
         fill: Color.fromAlpha(baseColor, 0.6),
         strokeWidth: 3,
         markerSymbol: "?",
+        clampToGround: true
       })
       await viewer.dataSources.add(datasource)
       return datasource
@@ -94,9 +96,10 @@ export const LoadTileJSON = async (file: string, viewer: Viewer) => {
 
 export const LoadCzml = async (file: string, viewer: Viewer) => {
   const czmlDataSource = await CzmlDataSource.load(`${getSchema()}${file}`)
+  viewer.clockTrackedDataSource = czmlDataSource
   await viewer.dataSources.add(czmlDataSource)
   return czmlDataSource
-};
+};``
 //@ts-ignore
 export const LoadShapefile = async (file: string, viewer: Viewer, color: string) => {
   try {

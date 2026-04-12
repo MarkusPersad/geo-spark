@@ -10,7 +10,7 @@ export const InitViewer = (ref: Readonly<ShallowRef<HTMLDivElement | null>>, pro
   if (ref.value) {
     provider.viewer = new Viewer(ref.value!, {
       homeButton: false,
-      automaticallyTrackDataSourceClocks: false,
+      // automaticallyTrackDataSourceClocks: false,
       geocoder: false,
       animation: false,
       sceneModePicker: false,

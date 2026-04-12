@@ -20,7 +20,7 @@ import {
 import {Button} from "@/components/ui/button";
 import {FoldersIcon} from "lucide-vue-next";
 import {Input} from "@/components/ui/input";
-import { useSources} from "@/lib/state";
+import { useClock, useSources} from "@/lib/state";
 import {Field} from "@/components/ui/field";
 import {open as openFile} from '@tauri-apps/plugin-dialog';
 import {toast} from "vue-sonner";
@@ -28,8 +28,11 @@ import {CesiumProvider,cesiumProviderSymbol} from "@/components/cesium";
 import {LoadCzml, LoadGeoJSON, LoadShapefile, LoadTileJSON,getFileNameFromPath} from "@/lib";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import { SketchPicker } from 'vue-color';
+import { storeToRefs } from "pinia";
+import { CzmlDataSource, JulianDate } from "cesium";
 
 const isDesktop = useMediaQuery('(min-width: 640px)')
+const { clockState } = storeToRefs(useClock())
 
 const Modal = computed(() => ({
   Root: isDesktop.value ? Dialog : Drawer,
@@ -93,12 +96,19 @@ const load = async () => {
       }
       else if (geospatialFile.value.endsWith('czml')) {
         source = await LoadCzml(geospatialFile.value, cesiumProvider.viewer)
+        clockState.value.isClock = true
+        clockState.value.realTime = false
+        clockState.value.multiplier = (source as CzmlDataSource).clock.multiplier
+        clockState.value.timeRange = {
+          start: JulianDate.toDate((source as CzmlDataSource).clock.startTime),
+          end: JulianDate.toDate((source as CzmlDataSource).clock.stopTime),
+        }
       }
        else if (geospatialFile.value.endsWith('.geojson')|| geospatialFile.value.endsWith('.json')) {
         source = await LoadGeoJSON(geospatialFile.value, cesiumProvider.viewer,color.value)
       }
        if (geospatialFile.value){
-         addSource(getFileNameFromPath(geospatialFile.value,false), source)
+         addSource(getFileNameFromPath(geospatialFile.value, false), source)
        }
     }
   } catch (err:any) {

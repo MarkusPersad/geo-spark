@@ -10,9 +10,9 @@ import {
   SunClock
 } from "@/components/cesium";
 import {FloatingButton} from "@/components/data";
-import {useTemplateRef} from "vue";
+import {useTemplateRef, watch} from "vue";
 import {onBeforeRouteUpdate} from "vue-router";
-import {useSources} from "@/lib/state";
+import {useClock, useSources} from "@/lib/state";
 import {Cartesian3, Cesium3DTileset, CzmlDataSource, GeoJsonDataSource} from "cesium";
 import GeoJsonPrimitiveLayer from "@cesium-extends/primitive-geojson";
 import { bboxPolygon,center } from '@turf/turf';
@@ -24,7 +24,8 @@ defineOptions({
 })
 const cv = useTemplateRef("cv")
 const {getSource,removeSource} = useSources()
-const {sourceList} = storeToRefs(useSources())
+const { sourceList } = storeToRefs(useSources())
+const { clockState } = storeToRefs(useClock())
 
 onBeforeRouteUpdate((to)=>{
   const key = to.params.key as string
@@ -64,6 +65,15 @@ onBeforeRouteUpdate((to)=>{
         removeSource(key)
       }
     }
+  }
+})
+
+watch(() => sourceList.value, (value) => {
+  if (value.some(source => source instanceof CzmlDataSource)) {
+    clockState.value.timeRangeBorrowed = true
+  } else {
+    clockState.value.timeRangeBorrowed = false
+    clockState.value.realTime = true
   }
 })
 </script>
