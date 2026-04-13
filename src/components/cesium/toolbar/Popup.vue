@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { AnimatePresence, motion } from 'motion-v';
-import { inject, onMounted, onUnmounted, ref, watch } from 'vue';
+import { inject, onMounted, onUnmounted, ref,watch } from 'vue';
 import { CesiumProvider, cesiumProviderSymbol } from '@/components/cesium';
 import {
   Cartesian2,
@@ -165,48 +165,56 @@ onUnmounted(() => {
         x: screenPosition.x,
         y: screenPosition.y,
         translateX: '-50%',
-        translateY: '-100%'
+        translateY: '-100%',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)'
       }"
-        :exit="{ opacity: 0, scale: 0 }"
-        :while-hover="{ scale: 1 }"
-        :while-drag="{ scale: 0.6 }"
-        :transition="{
-        duration: 0.4,
-        scale: { type: 'spring', bounce: 0.5 },
-        x: { type: 'spring' },
-        y: { type: 'spring' }
-      }"
-        class="z-10 fixed pointer-events-auto"
+    :while-hover="{
+    scale: 1,
+    backgroundColor: 'rgba(243, 246, 255, 0.98)',
+    boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.4)'
+    }"
+    :while-drag="{ scale: 0.6 }"
+    :exit="{ opacity: 0, scale: 0 }"
+    :transition="{
+    duration: 0.4,
+    scale: { type: 'spring', bounce: 0.5 },
+    x: { type: 'spring' },
+    y: { type: 'spring' },
+    backgroundColor: { duration: 0.2 }
+    }"
+    class="z-10 fixed pointer-events-auto rounded-lg"
     >
-      <Card class="w-full max-w-sm">
-        <CardHeader class="relative">
-          <CardTitle class="text-center">属性表</CardTitle>
-          <CardAction class="absolute right-4 top-4">
-            <Button variant="outline" size="icon-sm" @click="closePopup">
-              <XIcon class="w-4 h-4" />
-            </Button>
-          </CardAction>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea class="max-h-75">
-            <Table>
-              <TableBody>
-                <TableRow v-for="(value, key) in property" :key="key">
-                  <TableCell class="font-medium">{{ key }}</TableCell>
-                  <TableCell>{{ value }}</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </ScrollArea>
-        </CardContent>
-      </Card>
+    <Card class="w-full max-w-sm bg-transparent">
+      <CardHeader class="relative">
+        <CardTitle class="text-center">属性表</CardTitle>
+        <CardAction class="absolute right-4 top-4">
+          <Button variant="outline" size="icon-sm" @click="closePopup">
+            <XIcon class="w-4 h-4" />
+          </Button>
+        </CardAction>
+      </CardHeader>
+      <CardContent>
+        <ScrollArea class="max-h-75">
+          <Table>
+            <TableBody>
+              <TableRow v-for="(value, key) in property" :key="key">
+                <TableCell class="font-medium">{{ key }}</TableCell>
+                <TableCell>{{ value }}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </ScrollArea>
+      </CardContent>
+    </Card>
     </motion.div>
   </AnimatePresence>
 </template>
 
 <style scoped>
-/* 修复拖拽穿透问题 */
 .pointer-events-auto {
   pointer-events: auto;
+}
+:deep(.Card) {
+  background: transparent !important;
 }
 </style>
