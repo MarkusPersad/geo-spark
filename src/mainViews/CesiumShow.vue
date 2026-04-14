@@ -52,8 +52,7 @@ onBeforeRouteUpdate((to)=>{
         if (source instanceof GeoJsonDataSource){
           cv.value.cesiumProvider.viewer?.dataSources.remove(source)
         } else if (source instanceof GeoJsonPrimitiveLayer){
-          source.primitiveCollection.destroyPrimitives = true
-          source.primitiveCollection.removeAll()
+          source.destroy()
         } else if (source instanceof CzmlDataSource){
           cv.value.cesiumProvider.viewer?.dataSources.remove(source)
           cv.value!.cesiumProvider.viewer &&

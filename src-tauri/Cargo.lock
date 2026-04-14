@@ -4171,9 +4171,9 @@ dependencies = [
 
 [[package]]
 name = "satkit"
-version = "0.16.1"
+version = "0.16.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9737eb6ee44b72c271ff65efb0dd0289857c7cb9065a41749aff87c96fcb15c"
+checksum = "9549dd23291b9d6010f76b6bcc5f2a78c836db236163a0598501390936f56b9c"
 dependencies = [
  "anyhow",
  "chrono",

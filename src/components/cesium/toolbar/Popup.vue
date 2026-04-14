@@ -2,7 +2,17 @@
 import { AnimatePresence, motion } from 'motion-v';
 import { inject, onMounted, onUnmounted, ref, watch } from 'vue';
 import { CesiumProvider, cesiumProviderSymbol } from '@/components/cesium';
-import { Billboard, Cartesian2, Cartesian3, Entity, SceneTransforms, ScreenSpaceEventHandler, ScreenSpaceEventType, Viewer, BillboardCollection, DistanceDisplayCondition } from 'cesium';
+import {
+  Billboard,
+  Cartesian2,
+  Cartesian3,
+  Entity,
+  ScreenSpaceEventHandler,
+  ScreenSpaceEventType,
+  Viewer,
+  BillboardCollection,
+  DistanceDisplayCondition,
+} from 'cesium';
 import { storeToRefs } from 'pinia';
 import { useSources } from '@/lib/state';
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,7 +42,8 @@ let handler: ScreenSpaceEventHandler
 
 const updatePopupPosition = () => {
   if (!Object.keys(property.value).length) return
-  const cartesian2 = SceneTransforms.worldToWindowCoordinates(viewer.scene, position.value)
+  // 修复：更稳定的坐标转换
+  const cartesian2 = Cartesian2.clone(viewer.scene.cartesianToCanvasCoordinates(position.value)!);
   if (!cartesian2) return
   screenPosition.value = cartesian2
   const cameraPos = viewer.camera.position
@@ -63,22 +74,32 @@ const pickFeature = (clickPosition: Cartesian2) => {
     }
     return
   }
+  let found = false;
   for (const souce of sourceList.value) {
     if (souce instanceof GeoJsonPrimitiveLayer) {
       const feature = (souce as GeoJsonPrimitiveLayer).getFeatureItemById(pickedObject.id)
       if (feature?.properties) {
         property.value = feature.properties
+        found = true;
         break
       }
     }
   }
+  // 如果找不到对应feature → 关闭弹窗和billboard
+  if (!found) {
+    closePopup();
+  }
 }
 
+// 安全关闭弹窗（彻底清理）
 const closePopup = () => {
   property.value = {}
   popupShow.value = false
-  billboardCollection.remove(billBoard!)
+  if (billBoard) {
+    billboardCollection.remove(billBoard)
+  }
   billBoard = null
+  selected = undefined
 }
 
 watch(() => property.value, () => {
@@ -96,15 +117,17 @@ watch(() => position.value, (value) => {
   })
 })
 
+// ✅ 关键修复：数据源移除时自动关闭弹窗和billboard
+watch(sourceList, (n, o) => {
+  if (o.length > n.length) {
+    closePopup();
+  }
+}, { deep: true });
+
 onMounted(() => {
-
-  //启用渲染监听
   viewer.scene.postRender.addEventListener(updatePopupPosition)
-
-  // 禁用默认
   viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK)
   viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
-
 
   handler = new ScreenSpaceEventHandler(viewer.canvas)
   handler.setInputAction((event: { position: Cartesian2 }) => {
@@ -115,12 +138,14 @@ onMounted(() => {
 onUnmounted(() => {
   viewer.scene.postRender.removeEventListener(updatePopupPosition)
   handler.destroy()
+  closePopup(); // 组件销毁时也清理
 })
 </script>
+
 <template>
   <AnimatePresence>
     <motion.div v-if="popupShow && Object.keys(property).length > 0" drag :dragElastic="0.2"
-      :dragConstraints="viewer.canvas" :initial="{ opacity: 0, scale: 0, x: '-50%', y: '-100%' }" :animate="{
+                :dragConstraints="viewer.canvas" :initial="{ opacity: 0, scale: 0, x: '-50%', y: '-100%' }" :animate="{
         opacity: 0.75,
         scale: 0.8,
         x: screenPosition.x,
