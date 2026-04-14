@@ -9,6 +9,7 @@ import {
 import { invoke } from "@tauri-apps/api/core";
 import { platform } from "@tauri-apps/plugin-os";
 import GeoJsonPrimitiveLayer from "@cesium-extends/primitive-geojson";
+import { addTempFiles } from '@/lib/state'
 
 const osPlatform = platform();
 
@@ -99,12 +100,13 @@ export const LoadCzml = async (file: string, viewer: Viewer) => {
   viewer.clockTrackedDataSource = czmlDataSource
   await viewer.dataSources.add(czmlDataSource)
   return czmlDataSource
-};``
+}; ``
 //@ts-ignore
 export const LoadShapefile = async (file: string, viewer: Viewer, color: string) => {
   try {
     await invoke("convert", { shpPath: file })
     file = changeExtension(file, "geojson")
+    addTempFiles(file)
     return await LoadGeoJSON(file, viewer, color)
   } catch (err: any) {
     throw err

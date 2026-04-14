@@ -44,6 +44,23 @@
     "core:app:allow-default-window-icon",
     "dialog:default",
     "fs:default",
+    {
+      "identifier": "fs:allow-remove",
+      "allow": [
+        {
+          "path": "$APPDATA/**/*"
+        },
+        {
+          "path": "$APPCONFIG/**/*"
+        },
+        {
+          "path": "$HOME/**/*"
+        },
+        {
+          "path": "$DOWNLOAD/**/*"
+        }
+      ]
+    },
     "fs:allow-home-write",
     "fs:allow-home-read",
     "fs:allow-document-write",
