@@ -1,13 +1,14 @@
 {
-    "IONTOKEN": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZDM0OTQyYy03OGJhLTQyYmItODRjOC0wZmViMWE4NjFmZDciLCJpZCI6MjUyNjkxLCJpYXQiOjE3NDI3MjUwNjF9.0KOK769mR-ybU9eU66QgHYl4Zzj_U-190WI0chbja5g",
-    "BaseURL": "http://127.0.0.1:8080",
-    "API": {
-        "LOGIN": "/user/login",
-        "REGISTER": "/user/register",
-        "VERIFICATIONS": "/user/sendVerifyCode",
-        "Refresh": "/refresh",
-        "LOGOUT": "/user/logout",
-        "IMAGERY": "/proxy/imagery",
-        "GEOCODER": "/proxy/geocoder"
-    }
+  "IONTOKEN": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZDM0OTQyYy03OGJhLTQyYmItODRjOC0wZmViMWE4NjFmZDciLCJpZCI6MjUyNjkxLCJpYXQiOjE3NDI3MjUwNjF9.0KOK769mR-ybU9eU66QgHYl4Zzj_U-190WI0chbja5g",
+  "BaseURL": "http://127.0.0.1:8080",
+  "API": {
+    "LOGIN": "/user/login",
+    "REGISTER": "/user/register",
+    "VERIFICATIONS": "/user/sendVerifyCode",
+    "Refresh": "/refresh",
+    "LOGOUT": "/user/logout",
+    "IMAGERY": "/proxy/imagery",
+    "GEOCODER": "/proxy/geocoder",
+    "IPINFO": "/proxy/location"
+  }
 }

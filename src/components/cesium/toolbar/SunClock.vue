@@ -84,7 +84,7 @@ watch(() => clockState.value.realTime, (value) => {
   <Field orientation="horizontal" class="gap-2">
     <HoverCard>
       <HoverCardTrigger as-child>
-        <Button variant="outline" size="icon" @click="clockState.timeRangeBorrowed&&(clockState.isClock = !clockState.isClock)">
+        <Button variant="outline" size="icon" @click="clockState.isClock = !clockState.isClock">
           <ClockIcon :color="clockColor" />
         </Button>
       </HoverCardTrigger>

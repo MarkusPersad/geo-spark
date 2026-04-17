@@ -1,5 +1,6 @@
 mod geo_spark;
 
+use crate::geo_spark::get_client_ip;
 use crate::geo_spark::shapefile_to_geojson::convert;
 use crate::geo_spark::stream_file::get_stream_response;
 use crate::geo_spark::tle_czml::tle_generate_czml;
@@ -89,7 +90,8 @@ pub fn run() {
             get_desktop_environment,
             update_login_state,
             convert,
-            tle_generate_czml
+            tle_generate_czml,
+            get_client_ip
         ])
         .setup(|app| {
             let main_window = app.get_webview_window("main").unwrap();

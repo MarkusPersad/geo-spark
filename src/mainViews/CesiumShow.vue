@@ -7,35 +7,36 @@ import {
   TerrainToggle,
   Zoom,
   Popup,
-  SunClock
+  SunClock,
+  Location
 } from "@/components/cesium";
-import {FloatingButton} from "@/components/data";
-import {useTemplateRef, watch} from "vue";
-import {onBeforeRouteUpdate} from "vue-router";
-import {useClock, useSources} from "@/lib/state";
-import {Cartesian3, Cesium3DTileset, CzmlDataSource, GeoJsonDataSource} from "cesium";
+import { FloatingButton } from "@/components/data";
+import { useTemplateRef, watch } from "vue";
+import { onBeforeRouteUpdate } from "vue-router";
+import { useClock, useSources } from "@/lib/state";
+import { Cartesian3, Cesium3DTileset, CzmlDataSource, GeoJsonDataSource } from "cesium";
 import GeoJsonPrimitiveLayer from "@cesium-extends/primitive-geojson";
-import { bboxPolygon,center } from '@turf/turf';
-import {toast} from "vue-sonner";
-import {storeToRefs} from "pinia";
+import { bboxPolygon, center } from '@turf/turf';
+import { toast } from "vue-sonner";
+import { storeToRefs } from "pinia";
 
 defineOptions({
   name: "CesiumShow"
 })
 const cv = useTemplateRef("cv")
-const {getSource,removeSource} = useSources()
+const { getSource, removeSource } = useSources()
 const { sourceList } = storeToRefs(useSources())
 const { clockState } = storeToRefs(useClock())
 
-onBeforeRouteUpdate((to)=>{
+onBeforeRouteUpdate((to) => {
   const key = to.params.key as string
-  const  isDelete = to.params.delete
-  if (cv.value?.cesiumProvider&& key){
+  const isDelete = to.params.delete
+  if (cv.value?.cesiumProvider && key) {
     const source = getSource(key)
-    if (source){
-      if (!Boolean(isDelete)){
+    if (source) {
+      if (!Boolean(isDelete)) {
         try {
-          if (source instanceof GeoJsonPrimitiveLayer){
+          if (source instanceof GeoJsonPrimitiveLayer) {
             const centerPoint = center(bboxPolygon(source.geojson?.bbox!))
             const [lon, lat] = centerPoint.geometry.coordinates;
             cv.value.cesiumProvider.viewer?.camera.flyTo({
@@ -44,21 +45,21 @@ onBeforeRouteUpdate((to)=>{
           } else {
             cv.value.cesiumProvider.viewer?.flyTo(source)
           }
-        } catch (err:any) {
-          toast.error(err.message||String(err))
+        } catch (err: any) {
+          toast.error(err.message || String(err))
           cv.value.cesiumProvider.viewer?.camera.flyHome(2.0)
         }
       } else {
-        if (source instanceof GeoJsonDataSource){
+        if (source instanceof GeoJsonDataSource) {
           cv.value.cesiumProvider.viewer?.dataSources.remove(source)
-        } else if (source instanceof GeoJsonPrimitiveLayer){
+        } else if (source instanceof GeoJsonPrimitiveLayer) {
           source.destroy()
-        } else if (source instanceof CzmlDataSource){
+        } else if (source instanceof CzmlDataSource) {
           cv.value.cesiumProvider.viewer?.dataSources.remove(source)
           cv.value!.cesiumProvider.viewer &&
-          (cv.value!.cesiumProvider.viewer.clock.shouldAnimate =
+            (cv.value!.cesiumProvider.viewer.clock.shouldAnimate =
               sourceList.value.some(item => item instanceof CzmlDataSource))
-        } else if (source instanceof Cesium3DTileset){
+        } else if (source instanceof Cesium3DTileset) {
           cv.value.cesiumProvider.viewer?.scene.primitives.remove(source)
         }
         removeSource(key)
@@ -81,6 +82,7 @@ watch(() => sourceList.value, (value) => {
   <CesiumViewer ref="cv">
     <FloatingButton>
       <template v-slot:up>
+        <Location />
         <Suspense>
           <TerrainToggle />
         </Suspense>
