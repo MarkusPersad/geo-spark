@@ -1,8 +1,9 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import tailwindcss from "@tailwindcss/vite";
-import { resolve } from 'path'
-import cesium from 'vite-plugin-cesium'
+import { resolve } from 'path';
+import cesium from 'vite-plugin-cesium';
+import { compression } from 'vite-plugin-compression2';
 
 const host = process.env.TAURI_DEV_HOST;
 
@@ -14,6 +15,11 @@ export default defineConfig(async () => ({
       cesium({
         rebuildCesium: true,
       }),
+      compression({
+          threshold: 2000,
+          deleteOriginalAssets: false,
+          skipIfLargerOrEqual:true,
+      })
   ],
   resolve: {
     alias: {

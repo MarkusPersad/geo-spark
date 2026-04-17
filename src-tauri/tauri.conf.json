@@ -28,7 +28,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; media-src stream: http://stream.localhost",
+      "dangerousDisableAssetCspModification": true,
       "assetProtocol": {
         "enable": true,
         "scope": []
