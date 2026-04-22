@@ -44,20 +44,28 @@
     "core:app:allow-default-window-icon",
     "dialog:default",
     "fs:default",
+    "fs:allow-remove",
+    "fs:allow-write-file",
     {
-      "identifier": "fs:allow-remove",
+      "identifier": "fs:scope",
       "allow": [
         {
-          "path": "$APPDATA/**/*"
+          "path": "$APPDATA/**/*.*"
         },
         {
-          "path": "$APPCONFIG/**/*"
+          "path": "$APPCONFIG/**/*.*"
         },
         {
-          "path": "$HOME/**/*"
+          "path": "$HOME/**/*.*"
         },
         {
-          "path": "$DOWNLOAD/**/*"
+          "path": "$DOWNLOAD/**/*.*"
+        },
+        {
+          "path": "$DOCUMENT/**/*.*"
+        },
+        {
+          "path": "$PICTURE/**/*.*"
         }
       ]
     },
@@ -67,6 +75,9 @@
     "fs:allow-document-read",
     "fs:allow-download-read",
     "fs:allow-download-write",
-    "os:default"
+    "os:default",
+    "core:window:allow-set-content-protected",
+    "upload:default",
+    "upload:allow-download"
   ]
 }

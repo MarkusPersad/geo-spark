@@ -10,9 +10,9 @@ use tokio::io::{AsyncReadExt, AsyncSeekExt};
 pub async fn get_stream_response(
     request: http::Request<Vec<u8>>,
 ) -> Result<http::Response<Vec<u8>>, Box<dyn std::error::Error>> {
-    let mut  path = percent_encoding::percent_decode(&request.uri().path().as_bytes()[1..])
-            .decode_utf8_lossy()
-            .to_string();
+    let mut path = percent_encoding::percent_decode(&request.uri().path().as_bytes()[1..])
+        .decode_utf8_lossy()
+        .to_string();
     if !path.contains(":") && !path.starts_with("/") {
         path = format!("/{}", path)
     }

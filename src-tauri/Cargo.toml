@@ -31,15 +31,17 @@ tauri-plugin-process = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 mime = "0.3.17"
-tokio = { version = "1.50.0", features = ["full"] }
+tokio = { version = "1.52.1", features = ["full"] }
 percent-encoding = "2.3.2"
 http-range = "0.1.5"
 tauri-plugin-os = "2"
 shp2geojson-cesium = { version = "0.1.4" }
 anyhow = "1.0.102"
 czml = "4.1.0"
-satkit = { version = "0.16.1", features = ["chrono"] }
+satkit = { version = "0.16.2", features = ["chrono"] }
 chrono = "0.4.44"
 numeris = "0.5.8"
 struson = { version = "0.7.2", features = ["serde"] }
 public-ip-address = "0.4.0"
+crabcamera = { version = "0.8.3",features = ["recording", "audio"] }
+tauri-plugin-upload = "2"

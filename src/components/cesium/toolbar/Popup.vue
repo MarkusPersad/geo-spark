@@ -117,7 +117,6 @@ watch(() => position.value, (value) => {
   })
 })
 
-// ✅ 关键修复：数据源移除时自动关闭弹窗和billboard
 watch(sourceList, (n, o) => {
   if (o.length > n.length) {
     closePopup();

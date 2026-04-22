@@ -113,6 +113,8 @@ const load = async () => {
     }
   } catch (err: any) {
     toast.error(err.message || String(err))
+  } finally {
+    reset()
   }
 }
 const reset = () => {

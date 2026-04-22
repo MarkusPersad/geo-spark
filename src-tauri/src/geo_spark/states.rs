@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::sync::{ atomic::{AtomicBool, Ordering}};
+use std::sync::atomic::{AtomicBool, Ordering};
 
 #[warn(unused)]
 #[derive(Debug, Serialize, Deserialize)]

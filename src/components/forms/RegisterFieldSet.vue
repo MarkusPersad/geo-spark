@@ -90,7 +90,7 @@ onUnmounted(() =>{
         </Field>
         <Field data-invalid>
             <FieldLabel for="verify">验证码</FieldLabel>
-            <div  class=" ds-join gap-2" id="verify">
+            <div  class=" flex flex-row gap-2" id="verify">
                 <Input v-model="verify" type="text" placeholder="请输入验证码" aria-invalid v-bind="verifyAttrs" />
                 <Button
                 @click="VerifyCode"
