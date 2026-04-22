@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import {Button} from '@/components/ui/button';
-import {ImageIcon} from 'lucide-vue-next';
-import {computed, inject, nextTick, ref} from 'vue';
-import {CesiumProvider, cesiumProviderSymbol} from '@/components/cesium';
+import { Button } from '@/components/ui/button';
+import { ImageIcon } from 'lucide-vue-next';
+import { computed, inject, nextTick, ref } from 'vue';
+import { CesiumProvider, cesiumProviderSymbol } from '@/components/cesium';
 import {
   Dialog,
   DialogClose,
@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
-import {useMediaQuery} from '@vueuse/core';
+import { useMediaQuery } from '@vueuse/core';
 import {
   Drawer,
   DrawerClose,
@@ -24,7 +24,7 @@ import {
   DrawerTitle,
   DrawerTrigger
 } from '@/components/ui/drawer';
-import {FieldDescription, FieldGroup, FieldLegend, FieldSet} from "@/components/ui/field";
+import { Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import html2canvas from 'html2canvas-pro';
 import {
   NumberField,
@@ -33,11 +33,12 @@ import {
   NumberFieldIncrement,
   NumberFieldInput
 } from "@/components/ui/number-field";
-import {Label} from "@/components/ui/label";
-import {storeToRefs} from "pinia";
-import {useCapture} from "@/lib/state";
-import {toast} from "vue-sonner";
-import {BaseDirectory, exists, remove, writeFile} from "@tauri-apps/plugin-fs";
+import { Label } from "@/components/ui/label";
+import { storeToRefs } from "pinia";
+import { useCapture } from "@/lib/state";
+import { toast } from "vue-sonner";
+import { BaseDirectory, exists, remove, writeFile } from "@tauri-apps/plugin-fs";
+import { Input } from '@/components/ui/input';
 
 const cesiumProvider = inject<CesiumProvider>(cesiumProviderSymbol)
 const viewer = cesiumProvider?.viewer!
@@ -60,15 +61,16 @@ const Modal = computed(() => ({
 
 const scale = ref<number>(1.0)
 const { capture } = storeToRefs(useCapture())
+const fileName = ref<string>("export")
 const exportImage = async () => {
-  if ( await exists('export.png',{
-    baseDir:BaseDirectory.Download,
-  })){
-    await remove('export.png',{baseDir:BaseDirectory.Download})
+  if (await exists('export.png', {
+    baseDir: BaseDirectory.Download,
+  })) {
+    await remove('export.png', { baseDir: BaseDirectory.Download })
   }
   try {
     capture.value = true
-    await nextTick(async () =>{
+    await nextTick(async () => {
       const canvas = await html2canvas(viewer.container as HTMLElement, {
         scale: scale.value,
         logging: false,
@@ -76,11 +78,11 @@ const exportImage = async () => {
       canvas.toBlob(async (blob) => {
         if (blob) {
           const reader = blob.stream()
-          await writeFile('export.png',reader,{
+          await writeFile(`${fileName.value}.png`, reader, {
             createNew: true,
-            create:true,
-            baseDir:BaseDirectory.Download,
-            append:false,
+            create: true,
+            baseDir: BaseDirectory.Download,
+            append: false,
           })
         }
       }, 'image/png', 1)
@@ -116,6 +118,10 @@ const reset = () => {
           <FieldLegend></FieldLegend>
           <FieldDescription></FieldDescription>
           <FieldGroup>
+            <Field>
+              <FieldLabel for="file-name">图片名称</FieldLabel>
+              <Input type="text" placeholder="请输入文件名" id="file-name" v-model="fileName" />
+            </Field>
             <NumberField id="scale" :min="0.0" :max="1.0" :format-options="{
               signDisplay: 'exceptZero',
               minimumFractionDigits: 1,
