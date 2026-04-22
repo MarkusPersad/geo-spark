@@ -1,11 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-
-@plugin "daisyui"{
-  themes: false;
-  prefix: "ds-";
-}
-
 @source "../../node_modules/@vuelor/picker";
 
 /* 2. Define the Vuelor Design System tokens */

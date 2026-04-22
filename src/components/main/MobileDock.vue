@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { DatabaseZapIcon, Map } from "lucide-vue-next";
-import { useRoute } from 'vue-router';
-// 补充 RouterLink 导入（避免运行时报错）
-import { RouterLink } from 'vue-router';
+import { useRoute, RouterLink } from 'vue-router';
 
 const route = useRoute();
 
-const isActive = (path:string) => route.path === path
+const isActive = (path: string) => route.path === path;
 
 const items = [
   {
@@ -19,41 +17,27 @@ const items = [
     icon: DatabaseZapIcon,
     url: '/data'
   }
-]
+];
 </script>
 
 <template>
-  <div class="ds-dock ds-dock-xs w-full flex items-center justify-between ds-bg-neutral  ds-text-neutral-content">
-    <button
-        variant="outline"
+  <nav class="w-full flex items-center justify-between bg-neutral-800 text-neutral-100 p-2">
+    <RouterLink
         v-for="item in items"
         :key="item.title"
-        :class="[isActive(item.url) ? 'ds-dock-active' : '']"
-        class="flex-1 mx-1"
+        :to="item.url"
+        :class="[
+        'flex-1 mx-1 flex items-center justify-center h-12 rounded-lg border border-transparent whitespace-nowrap transition-colors duration-200',
+        isActive(item.url)
+          ? 'bg-primary/10 text-primary border-primary/20'
+          : 'hover:bg-neutral-700 hover:text-white'
+      ]"
     >
-    <RouterLink :to="item.url" class="flex items-center justify-center w-full">
-      <component :is="item.icon" class="mr-2" />
+      <component :is="item.icon" class="mr-2 w-5 h-5" />
       <span>{{ item.title }}</span>
     </RouterLink>
-    </button>
-  </div>
+  </nav>
 </template>
 
 <style scoped>
-@reference "tailwindcss"
-/* 激活状态样式（可选，根据你的设计调整） */
-.ds-dock-active {
-  @apply bg-primary/10 text-primary border-primary/20;
-}
-
-/* 确保 dock 容器无额外内边距，按钮完全占满 */
-.ds-dock {
-  padding: 0.5rem;
-}
-
-/* 按钮样式优化，确保点击区域完整 */
-:deep(.btn) {
-  height: 3rem;
-  white-space: nowrap;
-}
 </style>
