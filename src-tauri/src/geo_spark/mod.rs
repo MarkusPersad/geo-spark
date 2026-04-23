@@ -3,7 +3,6 @@ use public_ip_address::lookup::LookupProvider;
 pub mod shapefile_to_geojson;
 pub mod states;
 pub mod stream_file;
-pub mod tle_czml;
 
 #[tauri::command]
 pub async fn get_client_ip() -> tauri::Result<String> {
