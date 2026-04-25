@@ -63,10 +63,10 @@ const scale = ref<number>(1.0)
 const { capture } = storeToRefs(useCapture())
 const fileName = ref<string>("export")
 const exportImage = async () => {
-  if (await exists('export.png', {
+  if (await exists(`${fileName.value}.png`, {
     baseDir: BaseDirectory.Download,
   })) {
-    await remove('export.png', { baseDir: BaseDirectory.Download })
+    await remove(`${fileName.value}.png`, { baseDir: BaseDirectory.Download })
   }
   try {
     capture.value = true
@@ -97,7 +97,6 @@ const exportImage = async () => {
 const reset = () => {
   scale.value = 1.0
 }
-
 </script>
 <template>
   <component :is="Modal.Root" v-model:open="open">
@@ -122,7 +121,7 @@ const reset = () => {
               <FieldLabel for="file-name">图片名称</FieldLabel>
               <Input type="text" placeholder="请输入文件名" id="file-name" v-model="fileName" />
             </Field>
-            <NumberField id="scale" :min="0.0" :max="1.0" :format-options="{
+            <NumberField id="scale" :min="0.0" :format-options="{
               signDisplay: 'exceptZero',
               minimumFractionDigits: 1,
             }" :step="0.1" v-model="scale">

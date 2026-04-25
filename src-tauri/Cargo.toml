@@ -45,3 +45,6 @@ struson = { version = "0.7.2", features = ["serde"] }
 public-ip-address = "0.4.0"
 crabcamera = { version = "0.8.3",features = ["recording", "audio"] }
 tauri-plugin-upload = "2"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-single-instance = "2"

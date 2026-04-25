@@ -61,6 +61,12 @@ async fn close_splashscreen(app: tauri::AppHandle) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            let _ = app
+                .get_webview_window("main")
+                .expect("未找到主窗口")
+                .set_focus();
+        }))
         .plugin(tauri_plugin_upload::init())
         .plugin(tauri_plugin_os::init())
         .register_asynchronous_uri_scheme_protocol("stream", move |_ctx, request, responder| {
