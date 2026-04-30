@@ -49,6 +49,12 @@ export const router = () => {
     }).catch((err) => {
       throw new Error(err)
     })
+    router.onError(async (err) => {
+      await Notification.sendNotification({
+        icon: Notification.ERROR,
+        body: err.message || String(err)
+      })
+    })
     return router
   } catch (err: any) {
     Notification.sendNotification({
