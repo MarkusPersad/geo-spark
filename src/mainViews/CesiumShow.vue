@@ -8,12 +8,13 @@ import {
   Zoom,
   Popup,
   SunClock,
-  Location, Export
+  Location, Export,
+  Measure
 } from "@/components/cesium";
 import { FloatingButton } from "@/components/data";
-import { useTemplateRef, watch} from "vue";
+import { useTemplateRef, watch } from "vue";
 import { onBeforeRouteUpdate } from "vue-router";
-import {useCapture, useClock, useSources} from "@/lib/state";
+import { useCapture, useClock, useSources } from "@/lib/state";
 import { Cartesian3, Cesium3DTileset, CzmlDataSource, GeoJsonDataSource } from "cesium";
 import GeoJsonPrimitiveLayer from "@cesium-extends/primitive-geojson";
 import { bboxPolygon, center } from '@turf/turf';
@@ -94,6 +95,7 @@ watch(() => sourceList.value, (value) => {
         <BaseLayerSwitch />
         <FileLoader />
         <SunClock />
+        <Measure />
       </template>
     </FloatingButton>
     <Zoom v-show="!capture" />

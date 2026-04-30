@@ -10,10 +10,11 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@cesium-extends/measure": "^1.1.4",
     "@cesium-extends/primitive-geojson": "^1.0.11",
-    "@deck.gl/core": "^9.3.1",
-    "@deck.gl/layers": "^9.3.1",
-    "@deck.gl/mapbox": "^9.3.1",
+    "@deck.gl/core": "^9.3.2",
+    "@deck.gl/layers": "^9.3.2",
+    "@deck.gl/mapbox": "^9.3.2",
     "@internationalized/date": "^3.12.1",
     "@loaders.gl/json": "^4.4.1",
     "@popperjs/core": "^2.11.8",
@@ -56,7 +57,7 @@
     "vue-draggable-resizable": "^3.0.0",
     "vue-router": "^5.0.6",
     "vue-sonner": "^2.0.9",
-    "zod": "^4.3.6"
+    "zod": "^4.4.1"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.10.1",
