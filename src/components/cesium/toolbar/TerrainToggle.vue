@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {inject, ref} from "vue";
-import {CesiumProvider, cesiumProviderSymbol} from "@/components/cesium";
+import { inject, ref, watch } from "vue";
+import { CesiumProvider, cesiumProviderSymbol } from "@/components/cesium";
 import {
   createOsmBuildingsAsync,
   createWorldTerrainAsync,
@@ -8,30 +8,33 @@ import {
   ShadowMode,
   WebMercatorTilingScheme
 } from "cesium";
-import {Button} from "@/components/ui/button";
-import {MountainIcon, MountainSnowIcon} from 'lucide-vue-next'
+import { Button } from "@/components/ui/button";
+import { MountainIcon, MountainSnowIcon } from 'lucide-vue-next'
 
 const cesiumProvider = inject<CesiumProvider>(cesiumProviderSymbol)
 const osmBuilding = await createOsmBuildingsAsync()
+cesiumProvider?.viewer?.scene.primitives.add(osmBuilding)
 
 const TerrainLoaded = ref(false)
 
 
+watch(() => TerrainLoaded.value, (value) => {
+  osmBuilding.show = value
+})
+
 const ToggleTerrain = async () => {
-  if (cesiumProvider?.viewer){
-    if (TerrainLoaded.value){
+  if (cesiumProvider?.viewer) {
+    if (TerrainLoaded.value) {
       cesiumProvider.viewer.terrainShadows = ShadowMode.DISABLED
       cesiumProvider.viewer.scene.globe.depthTestAgainstTerrain = false
       cesiumProvider.viewer.terrainProvider = new EllipsoidTerrainProvider({
         tilingScheme: new WebMercatorTilingScheme(),
       })
-      cesiumProvider.viewer.scene.primitives.remove(osmBuilding)
     } else {
       cesiumProvider.viewer.terrainProvider = await createWorldTerrainAsync({
         requestWaterMask: true,
         requestVertexNormals: true
       })
-      cesiumProvider.viewer.scene.primitives.add(osmBuilding)
       cesiumProvider.viewer.terrainShadows = ShadowMode.RECEIVE_ONLY
       cesiumProvider.viewer.scene.globe.depthTestAgainstTerrain = true
     }
