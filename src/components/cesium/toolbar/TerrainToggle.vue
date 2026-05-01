@@ -20,7 +20,7 @@ const TerrainLoaded = ref(false)
 
 watch(() => TerrainLoaded.value, (value) => {
   osmBuilding.show = value
-})
+}, { immediate: true })
 
 const ToggleTerrain = async () => {
   if (cesiumProvider?.viewer) {
