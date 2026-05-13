@@ -7,9 +7,10 @@ import {
   TerrainToggle,
   Zoom,
   Popup,
-  SunClock,
+  Clock,
   Location, Export,
-  Measure
+  Measure,
+  Light
 } from "@/components/cesium";
 import { FloatingButton } from "@/components/data";
 import { useTemplateRef, watch } from "vue";
@@ -94,7 +95,8 @@ watch(() => sourceList.value, (value) => {
       <template v-slot:left>
         <BaseLayerSwitch />
         <FileLoader />
-        <SunClock />
+        <Clock />
+        <Light />
         <Measure />
       </template>
     </FloatingButton>
