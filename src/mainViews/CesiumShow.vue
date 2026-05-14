@@ -10,7 +10,8 @@ import {
   Clock,
   Location, Export,
   Measure,
-  Light
+  Light,
+  Viewshed3D
 } from "@/components/cesium";
 import { FloatingButton } from "@/components/data";
 import { useTemplateRef, watch } from "vue";
@@ -98,6 +99,7 @@ watch(() => sourceList.value, (value) => {
         <Clock />
         <Light />
         <Measure />
+        <Viewshed3D />
       </template>
     </FloatingButton>
     <Zoom v-show="!capture" />
