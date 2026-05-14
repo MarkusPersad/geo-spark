@@ -9,6 +9,7 @@
     "LOGOUT": "/user/logout",
     "IMAGERY": "/proxy/imagery",
     "GEOCODER": "/proxy/geocoder",
-    "IPINFO": "/proxy/location"
+    "IPINFO": "/proxy/location",
+    "ROUTEPLAN":"/proxy/routePlan"
   }
 }

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { inject, onMounted, onUnmounted, ref, watch } from 'vue'
 import { CesiumProvider, cesiumProviderSymbol } from '@/components/cesium'
-import { Cartesian2, Cartesian3, Color, defined, PointPrimitiveCollection, ScreenSpaceEventHandler, ScreenSpaceEventType } from 'cesium'
-import { Viewshed3D } from '@/lib/CesiumUtils'
+import { Cartesian3, Color, PointPrimitiveCollection } from 'cesium'
+import { selectPosition, Viewshed3D } from '@/lib/CesiumUtils'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { Button } from '@/components/ui/button'
 import { EyeIcon, PipetteIcon, TrashIcon } from 'lucide-vue-next'
+import { Field, FieldLabel, FieldLegend, FieldSet } from '@/components/ui/field'
 
 
 const cesiumProvider = inject<CesiumProvider>(cesiumProviderSymbol)
@@ -56,31 +57,11 @@ watch(viewPositionEnd, (value) => {
   updatePointMarker('end', value)
 })
 
-const selectPoint = async (): Promise<Cartesian3> => {
-  return new Promise((resolve) => {
-    viewer.canvas.style.cursor = 'crosshair'
-    const handler = new ScreenSpaceEventHandler(viewer.scene.canvas)
-    handler.setInputAction((event: { position: Cartesian2 }) => {
-      let cartesian = viewer.scene.pickPosition(event.position)
-      if (!defined(cartesian)) {
-        const ray = viewer.camera.getPickRay(event.position)
-        if (defined(ray)) {
-          cartesian = viewer.scene.globe.pick(ray, viewer.scene)!
-        }
-      }
-      if (defined(cartesian)) {
-        viewer.canvas.style.cursor = 'default'
-        handler.destroy()
-        resolve(cartesian)
-      }
-    }, ScreenSpaceEventType.LEFT_CLICK)
-  })
-}
 const selectViewPosition = async () => {
-  viewPosition.value = await selectPoint()
+  viewPosition.value = await selectPosition(viewer)
 }
 const selectViewPositionEnd = async () => {
-  viewPositionEnd.value = await selectPoint()
+  viewPositionEnd.value = await selectPosition(viewer)
 }
 
 watch([viewPosition, viewPositionEnd], ([start, end]) => {

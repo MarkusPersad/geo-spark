@@ -11,7 +11,8 @@ import {
   Location, Export,
   Measure,
   Light,
-  Viewshed3D
+  Viewshed3D,
+  RoutePlan
 } from "@/components/cesium";
 import { FloatingButton } from "@/components/data";
 import { useTemplateRef, watch } from "vue";
@@ -87,6 +88,7 @@ watch(() => sourceList.value, (value) => {
     <FloatingButton v-show="!capture">
       <template v-slot:up>
         <Export />
+        <RoutePlan />
         <Location />
         <Suspense>
           <TerrainToggle />
