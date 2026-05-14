@@ -1,6 +1,6 @@
 [package]
 name = "geo-spark"
-version = "0.2.0"
+version = "0.3.0"
 description = "Geo-Spark,Application for Management of GeoServer"
 authors = ["MarkusPersad<msp060308@gmail.com>"]
 edition = "2024"
