@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, ref, watch } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 import { CesiumProvider, cesiumProviderSymbol } from '@/components/cesium'
 import {
   Cartesian3,
@@ -42,6 +42,8 @@ viewer.scene.primitives.add(points)
 const startPosition = ref<Cartesian3 | null>(null)
 const endPosition = ref<Cartesian3 | null>(null)
 const mode = ref<"0" | "1" | "2" | "3">("0")
+
+const model = computed(() => mode.value === '3' ? '/Cesium_Man.glb' : '/CesiumMilkTruck.glb')
 
 // 非响应式变量
 let startPoint: any = null
@@ -133,7 +135,7 @@ const getRoutePlan = async () => {
       body: JSON.stringify({
         "start": cartesianToMsg(startPosition.value!), //
         "end": cartesianToMsg(endPosition.value!),
-        "mode": mode.value
+        "mode": model.value
       })
     })
     if (!res.ok) throw new Error("路径规划请求失败")
@@ -206,7 +208,7 @@ const finalizeEntityCreation = (positions: Cartographic[], startTime: JulianDate
     position: property,
     orientation: new VelocityOrientationProperty(property), // 自动车头朝向
     model: {
-      uri: "/CesiumMilkTruck.glb",
+      uri: model.value,
       heightReference: HeightReference.NONE,
       minimumPixelSize: 64
     },
