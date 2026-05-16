@@ -3,6 +3,7 @@ import {
   Color,
   CzmlDataSource,
   GeoJsonDataSource,
+  ImageryProvider,
   Resource,
   Viewer,
 } from "cesium";
@@ -10,6 +11,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { platform } from "@tauri-apps/plugin-os";
 import GeoJsonPrimitiveLayer from "@cesium-extends/primitive-geojson";
 import { addTempFiles } from '@/lib/state'
+import { TIFFImageryProvider } from 'tiff-imagery-provider'
+import proj4 from 'proj4'
 
 const osPlatform = platform();
 
@@ -108,6 +111,25 @@ export const LoadShapefile = async (file: string, viewer: Viewer, color: string)
     file = changeExtension(file, "geojson")
     addTempFiles(file)
     return await LoadGeoJSON(file, viewer, color)
+  } catch (err: any) {
+    throw err
+  }
+}
+
+export const LoadGeoTIFF = async (file: string, viewer: Viewer) => {
+  try {
+    const tiff = await TIFFImageryProvider.fromUrl(`${getSchema()}${file}`, {
+      projFunc: (code) => {
+        if (code === 32767) {
+          proj4.defs("EPSG:32767", "+proj=utm +zone=60 +south +datum=WGS84 +units=m +no_defs +type=crs");
+          return {
+            project: proj4("EPSG:4326", "EPSG:32767").forward,
+            unproject: proj4("EPSG:4326", "EPSG:32767").inverse
+          }
+        }
+      }
+    })
+    return viewer.imageryLayers.addImageryProvider(tiff as ImageryProvider)
   } catch (err: any) {
     throw err
   }

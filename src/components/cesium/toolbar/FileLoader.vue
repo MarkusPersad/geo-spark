@@ -25,7 +25,7 @@ import { Field } from "@/components/ui/field";
 import { open as openFile } from '@tauri-apps/plugin-dialog';
 import { toast } from "vue-sonner";
 import { CesiumProvider, cesiumProviderSymbol } from "@/components/cesium";
-import { LoadCzml, LoadGeoJSON, LoadShapefile, LoadTileJSON, getFileNameFromPath } from "@/lib";
+import { LoadCzml, LoadGeoJSON, LoadGeoTIFF, LoadShapefile, LoadTileJSON, getFileNameFromPath } from "@/lib";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SketchPicker } from 'vue-color';
 import { storeToRefs } from "pinia";
@@ -74,6 +74,10 @@ const selectGeoSpatialFile = async () => {
         {
           name: "CZML",
           extensions: ['czml']
+        },
+        {
+          name: "GeoTIFF",
+          extensions: ['tif', 'tiff']
         }
       ]
     })
@@ -106,6 +110,9 @@ const load = async () => {
       }
       else if (geospatialFile.value.endsWith('.geojson') || geospatialFile.value.endsWith('.json')) {
         source = await LoadGeoJSON(geospatialFile.value, cesiumProvider.viewer, color.value)
+      }
+      else if (geospatialFile.value.endsWith('.tif') || geospatialFile.value.endsWith('.tiff')) {
+        source = await LoadGeoTIFF(geospatialFile.value, cesiumProvider.viewer)
       }
       if (geospatialFile.value) {
         addSource(getFileNameFromPath(geospatialFile.value, false), source)

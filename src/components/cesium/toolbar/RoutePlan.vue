@@ -251,8 +251,8 @@ const createModelAnimotion = async (xmlStr: string) => {
       ]) as Cartographic[]
 
       finalizeEntityCreation(updated, startTime, duration, stopTime)
-    } catch (err) {
-      console.warn("切换至无地形模式:", err)
+    } catch (err: any) {
+      toast.error(`切换至无地形ERROR:${err.message || String(err)}`)
       finalizeEntityCreation(cartoPositions, startTime, duration, stopTime)
     }
   } else {
