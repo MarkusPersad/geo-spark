@@ -8,6 +8,7 @@
 ## 📖 项目简介
 
 Geo-Spark 是一个现代化的桌面应用程序，用于管理和可视化地理空间数据。它结合了 Cesium 和 MapLibre GL JS 提供强大的 3D 地图渲染能力，支持多种地理空间数据格式的加载、转换和管理。
+<p>服务端仓库：https://github.com/MarkusPersad/GH-Server.git</p>p
 
 ## ✨ 主要特性
 
