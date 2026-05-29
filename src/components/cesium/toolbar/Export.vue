@@ -99,7 +99,7 @@ const reset = () => {
 }
 </script>
 <template>
-  <component :is="Modal.Root" v-model:open="open">
+<component :is="Modal.Root" v-model:open="open">
     <component :is="Modal.Trigger">
       <Button variant="outline" size="icon">
         <ImageIcon />
