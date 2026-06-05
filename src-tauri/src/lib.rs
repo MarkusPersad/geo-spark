@@ -1,6 +1,6 @@
 mod geo_spark;
 
-use crate::geo_spark::get_client_ip;
+use crate::geo_spark::{get_client_ip,get_avatar_base64};
 use crate::geo_spark::shapefile_to_geojson::convert;
 use crate::geo_spark::stream_file::get_stream_response;
 use detect_desktop_environment::DesktopEnvironment;
@@ -97,7 +97,8 @@ pub fn run() {
             get_desktop_environment,
             update_login_state,
             convert,
-            get_client_ip
+            get_client_ip,
+            get_avatar_base64
         ])
         .setup(|app| {
             let main_window = app.get_webview_window("main").unwrap();
